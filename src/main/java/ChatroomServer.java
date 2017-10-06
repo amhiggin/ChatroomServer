@@ -1,94 +1,126 @@
 package main.java;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
-import java.sql.Connection;
-import java.util.ArrayList;
+import java.net.Socket;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChatroomServer {
 
+	private static final int SERVER_SOCKET = 15432;
 	private static AtomicInteger numThreads;
-	private static ArrayList<Thread> threadList;
+	private static ConcurrentSkipListMap<Socket, ClientThread> threadList;
+	private static ServerSocket serverSocket;
 
 	public static void main(String[] args) {
 		try {
 			initialiseServer();
-
 			while (true) {
 				try {
-					Connection clientConnection = acceptIncomingConnection();
-					String typeRequest = classifyRequestFromClient(clientConnection);
-					ClientThread clientThread = spawnNewClientThread(typeRequest);
-					clientThread.run();
+					handleIncomingConnection();
 				} catch (Exception e) {
-					// Exception handling
+					System.out.println(String.format("Error handling connection: %s", e));
 				}
 			}
 		} catch (Exception e) {
-			// TODO error handing
+			System.out.println(String.format("Error while initialising server: %s", e));
 		} finally {
 			shutdown();
 		}
 	}
 
-	static String classifyRequestFromClient(Connection clientConnection) throws RequestNotFoundException {
-		// TODO
-		return null;
-
-	}
-
 	private static void shutdown() {
 		try {
-
+			// TODO figure out what needs to happen to close the server
 		} catch (Exception e) {
-			// figure out what went wrong and deal with it
+			// TODO if something goes wrong, need to be able to exit
+			// Also display a message to our user to inform there was an issue
 		}
 	}
 
-	private static ClientThread spawnNewClientThread(String typeRequest) {
-		if (isValidConnection(typeRequest)) {
-			// TODO - may not be correct architecture
-		}
-		return null;
-	}
-
-	public static boolean isValidConnection(String requestType) {
-		Request request = Request.valueOf(requestType);
-		switch (request) {
+	private static ClientThread spawnNewClientThreadIfAppropriate(Request requestedAction, Socket clientSocket) {
+		switch (requestedAction) {
 		case Join:
-			return true;
+			return new ClientThread(0);
 		case Chat:
-			return true;
+			// Want to find the thread in our list, corresponding to this
+			// List of threads should be indexed by socket
+			return threadList.get(clientSocket);
 		case Leave:
-			return true;
+			// Want to find the thread in our list, corresponding to this
+			return null;
 		default:
-			return false;
+			return null;
 		}
 	}
 
-	private static Connection acceptIncomingConnection() {
-		verifyConnectionIsAllowed();
-		return null;
+	public static Request requestedAction(Socket clientSocket) throws IOException {
+		String requestType = parseClientRequest(clientSocket);
+		try {
+			return Request.valueOf(requestType);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
-	private static void verifyConnectionIsAllowed() {
-		// TODO Auto-generated method stub
+	private static void handleIncomingConnection() throws Exception {
+		Socket clientSocket = serverSocket.accept();
+		Request requestedAction = requestedAction(clientSocket);
+		if (requestedAction == null) {
+			throw new Exception("Invalid connection request");
+		}
+		// it is a valid connection
+		ClientThread clientThread = spawnNewClientThreadIfAppropriate(requestedAction, clientSocket);
+		recordThreadChangeWithServer(clientThread, requestedAction, clientSocket);
 
+		// TODO - what the client does at this point is dependent on what client
+		// is communicating
+		clientThread.run();
+	}
+
+	private static void recordThreadChangeWithServer(ClientThread clientThread, Request requestedAction,
+			Socket clientSocket) {
+		// This method should update the arraylist and the number of threads
+		// running
+		if (requestedAction.equals(Request.Join) && !threadList.containsKey(clientSocket)) {
+			numThreads.getAndIncrement();
+			threadList.put(clientSocket, clientThread);
+		} else if (requestedAction.equals(Request.Leave)) {
+			// it is a leave request
+			threadList.remove(clientThread);
+		}
+		// If a chat request, no need to change the threads
+	}
+
+	private static String parseClientRequest(Socket clientSocket) throws IOException {
+		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		// Assume that the request is in the first line
+		// TODO check that the splitting is correct
+		String clientSentence = inFromClient.readLine();
+		String[] request = clientSentence.split("_", 1);
+		return request[0];
 	}
 
 	private static void initialiseServer() throws IOException {
 		initialiseThreadVariables();
-
-		ServerSocket socket = new ServerSocket(15432);
-		System.out.println("Server listening on port 15432");
-		// Initialise port to listen on
-		// Do any necessary initialisation
+		serverSocket = new ServerSocket(SERVER_SOCKET);
+		System.out.println(String.format("Server listening on port %s", SERVER_SOCKET));
 	}
 
 	private static void initialiseThreadVariables() {
 		numThreads = new AtomicInteger(0);
-		threadList = new ArrayList<Thread>();
+		threadList = new ConcurrentSkipListMap<Socket, ClientThread>();
+	}
+
+	public AtomicInteger getNumThreads() {
+		return numThreads;
+	}
+
+	public ConcurrentSkipListMap<Socket, ClientThread> getListOfThreads() {
+		return threadList;
 	}
 
 }
