@@ -1,44 +1,28 @@
 package main.java;
 
+import java.net.Socket;
+
 public class ClientThread extends Thread {
 
-	public ClientThread() {
-		// TODO Auto-generated constructor stub
+	private int chatRoomNumber;
+	private Socket clientSocket;
+
+	public ClientThread(Socket clientSocket, int chatRoomRequested) {
+		this.clientSocket = clientSocket;
+		this.chatRoomNumber = chatRoomRequested;
 	}
 
-	public ClientThread(Runnable arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
+	public int getChatRoomNumber() {
+		return this.chatRoomNumber;
 	}
 
-	public ClientThread(String arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
+	public Socket getClientSocket() {
+		return this.clientSocket;
 	}
 
-	public ClientThread(ThreadGroup arg0, Runnable arg1) {
-		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
-	}
-
-	public ClientThread(ThreadGroup arg0, String arg1) {
-		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
-	}
-
-	public ClientThread(Runnable arg0, String arg1) {
-		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
-	}
-
-	public ClientThread(ThreadGroup arg0, Runnable arg1, String arg2) {
-		super(arg0, arg1, arg2);
-		// TODO Auto-generated constructor stub
-	}
-
-	public ClientThread(ThreadGroup arg0, Runnable arg1, String arg2, long arg3) {
-		super(arg0, arg1, arg2, arg3);
-		// TODO Auto-generated constructor stub
+	@Override
+	public void run() {
+		// TODO
 	}
 
 }
