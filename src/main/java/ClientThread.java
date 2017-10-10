@@ -14,7 +14,8 @@ public class ClientThread extends Thread {
 
 	@Override
 	public void run() {
-		// TODO
+		// TODO - what should be done when the thread is run
+		// close the client socket at the end
 	}
 
 }
