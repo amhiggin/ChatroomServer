@@ -5,20 +5,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChatroomServer {
 
 	private static final int SERVER_SOCKET = 15432; // TODO possibly update
 	private static AtomicInteger numThreads;
-	private static ConcurrentSkipListMap<Socket, ClientThread> threadList;
+	private static ConcurrentSkipListSet<Socket> activeClientList;
 	private static ServerSocket serverSocket;
+	private static Boolean terminateServer;
 
 	public static void main(String[] args) {
 		try {
 			initialiseServer();
-			while (true) {
+			while (true && !terminateServer.equals(Boolean.TRUE)) {
 				try {
 					handleIncomingConnection();
 				} catch (Exception e) {
@@ -34,27 +35,19 @@ public class ChatroomServer {
 
 	private static void shutdown() {
 		try {
-			// TODO figure out what needs to happen to close the server
+			recordClientChangeWithServer(Request.KillService, null);
+			serverSocket.close();
 		} catch (Exception e) {
 			// TODO if something goes wrong, need to be able to exit
-			// Also display a message to our user to inform there was an issue
+			e.printStackTrace();
 		}
 	}
 
-	private static ClientThread spawnNewClientThreadIfAppropriate(Request requestedAction, Socket clientSocket) {
-		switch (requestedAction) {
-		case Join:
-			return new ClientThread(0);
-		case Chat:
-			// Want to find the thread in our list, corresponding to this
-			// List of threads should be indexed by socket
-			return threadList.get(clientSocket);
-		case Leave:
-			// Want to find the thread in our list, corresponding to this
-			return null;
-		default:
-			return null;
+	private static ClientThread spawnNewClientThread(Request requestedAction, Socket clientSocket) throws Exception {
+		if (requestedAction.equals(Request.JoinChatroom) || requestedAction.equals(Request.HelloText)) {
+			return new ClientThread(0, requestedAction, clientSocket);
 		}
+		throw new Exception("Can't spawn new thread if not a join or hello request");
 	}
 
 	public static Request requestedAction(Socket clientSocket) throws IOException {
@@ -73,25 +66,27 @@ public class ChatroomServer {
 			throw new Exception("Invalid connection request");
 		}
 		// it is a valid connection
-		ClientThread clientThread = spawnNewClientThreadIfAppropriate(requestedAction, clientSocket);
-		recordThreadChangeWithServer(clientThread, requestedAction, clientSocket);
-
-		// TODO - what the client does at this point is dependent on what client
-		// is communicating
-		clientThread.run();
+		if (requestedAction.equals(Request.JoinChatroom) || requestedAction.equals(Request.HelloText)) {
+			ClientThread clientThread = spawnNewClientThread(requestedAction, clientSocket);
+			clientThread.run();
+		}
+		recordClientChangeWithServer(requestedAction, clientSocket);
 	}
 
-	private static void recordThreadChangeWithServer(ClientThread clientThread, Request requestedAction,
-			Socket clientSocket) {
-
-		if (requestedAction.equals(Request.Join) && !threadList.containsKey(clientSocket)) {
-			threadList.put(clientSocket, clientThread);
+	private static void recordClientChangeWithServer(Request requestedAction, Socket clientSocket) throws IOException {
+		if (requestedAction.equals(Request.JoinChatroom) && !activeClientList.contains(clientSocket)) {
+			activeClientList.add(clientSocket);
 			numThreads.getAndIncrement();
-		} else if (requestedAction.equals(Request.Leave)) {
-			threadList.remove(clientThread);
+		} else if (requestedAction.equals(Request.LeaveChatroom)) {
+			activeClientList.remove(clientSocket);
 			numThreads.getAndDecrement();
+		} else if (requestedAction.equals(Request.KillService)) {
+			for (Socket socket : activeClientList) {
+				socket.close();
+				activeClientList.remove(socket);
+			}
 		}
-		// If a chat request, no need to alter the threads
+		// If a chat or hello request, no need to alter the active connections
 	}
 
 	private static String parseClientRequest(Socket clientSocket) throws IOException {
@@ -110,15 +105,16 @@ public class ChatroomServer {
 
 	private static void initialiseThreadVariables() {
 		numThreads = new AtomicInteger(0);
-		threadList = new ConcurrentSkipListMap<Socket, ClientThread>();
+		activeClientList = new ConcurrentSkipListSet<Socket>();
+		terminateServer = Boolean.FALSE;
 	}
 
 	public AtomicInteger getNumThreads() {
 		return numThreads;
 	}
 
-	public ConcurrentSkipListMap<Socket, ClientThread> getListOfThreads() {
-		return threadList;
+	public ConcurrentSkipListSet<Socket> getListOfThreads() {
+		return activeClientList;
 	}
 
 }

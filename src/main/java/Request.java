@@ -1,7 +1,8 @@
 package main.java;
 
 public enum Request {
-	Join("Join"), Chat("Chat"), Leave("Leave");
+	HelloText("HELO text\n"), JoinChatroom("JOIN_CHATROOM"), Chat("CHAT"), LeaveChatroom("LEAVE_CHATROOM"), KillService(
+			"KILL_SERVICE"), Disconnect("DISCONNECT");
 
 	private String value;
 
