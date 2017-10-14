@@ -100,9 +100,9 @@ public class ChatroomServer {
 	static synchronized void recordClientChangeWithServer(Request requestedAction, ClientNode clientNode)
 			throws IOException {
 		if (clientNode != null) {
-			if (requestedAction.equals(Request.JoinChatroom) && !getActiveChatRooms().values().contains(clientNode)) {
+			if (requestedAction.equals(Request.JOIN_CHATROOM) && !getActiveChatRooms().values().contains(clientNode)) {
 				addClientRecordToServer(clientNode);
-			} else if (requestedAction.equals(Request.LeaveChatroom)
+			} else if (requestedAction.equals(Request.LEAVE_CHATROOM)
 					&& getActiveChatRooms().values().contains(clientNode)) {
 				removeClientRecordFromServer(clientNode,
 						doesChatroomAlreadyExistByReference(clientNode.getChatroomId()));

@@ -23,19 +23,19 @@ public class ClientThread extends Thread {
 	public void run() {
 		try {
 			switch (requestType) {
-			case JoinChatroom:
+			case JOIN_CHATROOM:
 				joinChatroom();
 				break;
-			case HelloText:
+			case HELO_TEXT:
 				sayHello();
 				break;
-			case LeaveChatroom:
+			case LEAVE_CHATROOM:
 				leaveChatroom();
 				break;
-			case Chat:
+			case CHAT:
 				chat();
 				break;
-			case Disconnect:
+			case DISCONNECT:
 				disconnectFromServer();
 				break;
 			default:
@@ -61,7 +61,8 @@ public class ClientThread extends Thread {
 		String[] contentsAfterRequestType = this.messageReceived.split(":");
 		String[] restOfMessage = contentsAfterRequestType[1].split("\n");
 		int parsedRequestedChatroomToJoin = 0; // TODO parse this properly
-		Chatroom chatroomAlreadyOnRecord = ChatroomServer.doesChatroomAlreadyExistByReference(parsedRequestedChatroomToJoin);
+		Chatroom chatroomAlreadyOnRecord = ChatroomServer
+				.doesChatroomAlreadyExistByReference(parsedRequestedChatroomToJoin);
 		if (chatroomAlreadyOnRecord != null) {
 			chatroomAlreadyOnRecord.addClientNode(clientNode);
 		} else {
