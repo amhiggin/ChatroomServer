@@ -84,6 +84,7 @@ public class ChatroomServer {
 
 	private static void shutdown() {
 		try {
+			System.out.println("Initiating server shutdown...");
 			for (Entry<Chatroom, ConcurrentSkipListSet<ClientNode>> entry : getActiveChatRooms().entrySet()) {
 				for (ClientNode client : entry.getValue()) {
 					client.getConnection().close();
