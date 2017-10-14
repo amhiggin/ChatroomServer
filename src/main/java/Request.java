@@ -1,8 +1,12 @@
 package main.java;
 
+/*
+ * Enum for possible valid requests from a client.
+ */
+
 public enum Request {
 	HelloText("HELO text\n"), JoinChatroom("JOIN_CHATROOM"), Chat("CHAT"), LeaveChatroom("LEAVE_CHATROOM"), KillService(
-			"KILL_SERVICE"), Disconnect("DISCONNECT");
+			"KILL_SERVICE\n"), Disconnect("DISCONNECT");
 
 	private String value;
 

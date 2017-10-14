@@ -5,20 +5,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChatroomServer {
 
-	private static final int SERVER_SOCKET = 15432; // TODO possibly update
-	private static AtomicInteger numThreads;
-	private static ConcurrentSkipListSet<Socket> activeClientList;
 	private static ServerSocket serverSocket;
-	private static Boolean terminateServer;
+	private static AtomicBoolean terminateServer;
+	private static ConcurrentSkipListMap<Chatroom, ConcurrentSkipListSet<ClientNode>> activeChatRooms;
 
+	/*
+	 * Server port is passed as arg[0]
+	 */
 	public static void main(String[] args) {
 		try {
-			initialiseServer();
+			initialiseServer(args);
 			while (true && !terminateServer.equals(Boolean.TRUE)) {
 				try {
 					handleIncomingConnection();
@@ -33,21 +36,77 @@ public class ChatroomServer {
 		}
 	}
 
+	private static void initialiseServer(String[] args) throws Exception {
+		if (args.length != 1) {
+			throw new Exception("Incorrect initialisation arguments supplied: expected port number.");
+		}
+		serverSocket = new ServerSocket(Integer.parseInt(args[0]));
+		initialiseServerManagementVariables();
+		System.out.println(String.format("Server listening on port %s...", args[0]));
+	}
+
+	private static void initialiseServerManagementVariables() {
+		activeChatRooms = new ConcurrentSkipListMap<Chatroom, ConcurrentSkipListSet<ClientNode>>();
+		terminateServer = new AtomicBoolean(Boolean.FALSE);
+	}
+
+	private static synchronized void handleIncomingConnection() throws Exception {
+		Socket clientSocket = serverSocket.accept();
+		System.out.println(String.format("Connection received from %s...", clientSocket.getInetAddress().toString()));
+
+		// Extract connection-specific info
+		ClientNode client = extractClientInfo(clientSocket);
+		Request clientRequest = requestedAction(clientSocket);
+		String message = getFullMessageFromClient(clientSocket);
+		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message,
+				serverSocket.getLocalPort());
+
+		// Execute and update
+		newClientConnectionThread.run();// or .start()??
+		recordClientChangeWithServer(clientRequest, client);
+	}
+
+	private static String getFullMessageFromClient(Socket clientSocket) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private static ClientNode extractClientInfo(Socket clientSocket) throws IOException {
+		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		// FIXME (potentially) Assume that the request is in the first line
+		String clientSentence = inFromClient.readLine();
+
+		// Check that the below works
+		String[] clientName = (clientSentence.split("CLIENT_NAME:", 0))[0].split("\n", 0);
+		String[] chatroomId = (clientSentence.split("CHAT:", 0))[0].split("\n", 0);
+		return new ClientNode(clientSocket, clientName[0], 0);
+	}
+
 	private static void shutdown() {
 		try {
-			recordClientChangeWithServer(Request.KillService, null);
+			for (Entry<Chatroom, ConcurrentSkipListSet<ClientNode>> entry : getActiveChatRooms().entrySet()) {
+				for (ClientNode client : entry.getValue()) {
+					client.getConnection().close();
+				}
+			}
+			getActiveChatRooms().clear();
 			serverSocket.close();
 		} catch (Exception e) {
-			// TODO if something goes wrong, need to be able to exit
-			e.printStackTrace();
+			System.out.println(String.format("Error occurred when trying to shut down the server: %s", e));
 		}
 	}
 
-	private static ClientThread spawnNewClientThread(Request requestedAction, Socket clientSocket) throws Exception {
-		if (requestedAction.equals(Request.JoinChatroom) || requestedAction.equals(Request.HelloText)) {
-			return new ClientThread(0, requestedAction, clientSocket);
+	static synchronized void recordClientChangeWithServer(Request requestedAction, ClientNode clientNode)
+			throws IOException {
+		if (clientNode != null) {
+			if (requestedAction.equals(Request.JoinChatroom) && !getActiveChatRooms().values().contains(clientNode)) {
+				addClientRecordToServer(clientNode);
+			} else if (requestedAction.equals(Request.LeaveChatroom)
+					&& getActiveChatRooms().values().contains(clientNode)) {
+				removeClientRecordFromServer(clientNode,
+						doesChatroomAlreadyExistByReference(clientNode.getChatroomId()));
+			}
 		}
-		throw new Exception("Can't spawn new thread if not a join or hello request");
 	}
 
 	public static Request requestedAction(Socket clientSocket) throws IOException {
@@ -59,62 +118,45 @@ public class ChatroomServer {
 		}
 	}
 
-	private static void handleIncomingConnection() throws Exception {
-		Socket clientSocket = serverSocket.accept();
-		Request requestedAction = requestedAction(clientSocket);
-		if (requestedAction == null) {
-			throw new Exception("Invalid connection request");
-		}
-		// it is a valid connection
-		if (requestedAction.equals(Request.JoinChatroom) || requestedAction.equals(Request.HelloText)) {
-			ClientThread clientThread = spawnNewClientThread(requestedAction, clientSocket);
-			clientThread.run();
-		}
-		recordClientChangeWithServer(requestedAction, clientSocket);
-	}
-
-	private static void recordClientChangeWithServer(Request requestedAction, Socket clientSocket) throws IOException {
-		if (requestedAction.equals(Request.JoinChatroom) && !activeClientList.contains(clientSocket)) {
-			activeClientList.add(clientSocket);
-			numThreads.getAndIncrement();
-		} else if (requestedAction.equals(Request.LeaveChatroom)) {
-			activeClientList.remove(clientSocket);
-			numThreads.getAndDecrement();
-		} else if (requestedAction.equals(Request.KillService)) {
-			for (Socket socket : activeClientList) {
-				socket.close();
-				activeClientList.remove(socket);
-			}
-		}
-		// If a chat or hello request, no need to alter the active connections
-	}
-
 	private static String parseClientRequest(Socket clientSocket) throws IOException {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		// FIXME (potentially) Assume that the request is in the first line
 		String clientSentence = inFromClient.readLine();
-		String[] request = clientSentence.split("_", 1);
-		return request[0];
+		String[] requestType = clientSentence.split(":", 0);
+		return requestType[0];
 	}
 
-	private static void initialiseServer() throws IOException {
-		initialiseThreadVariables();
-		serverSocket = new ServerSocket(SERVER_SOCKET);
-		System.out.println(String.format("Server listening on port %s", SERVER_SOCKET));
+	private static void addClientRecordToServer(ClientNode clientNode) {
+		for (Entry<Chatroom, ConcurrentSkipListSet<ClientNode>> entry : getActiveChatRooms().entrySet()) {
+			if (entry.getKey().getChatroomId() == clientNode.getChatroomId()) {
+				if (!entry.getValue().contains(clientNode)) {
+					entry.getValue().add(clientNode);
+					return;
+				}
+			}
+		}
 	}
 
-	private static void initialiseThreadVariables() {
-		numThreads = new AtomicInteger(0);
-		activeClientList = new ConcurrentSkipListSet<Socket>();
-		terminateServer = Boolean.FALSE;
+	private static void removeClientRecordFromServer(ClientNode clientNode, Chatroom chatroom) throws IOException {
+		for (Entry<Chatroom, ConcurrentSkipListSet<ClientNode>> entry : getActiveChatRooms().entrySet()) {
+			if (entry.getKey() == chatroom) {
+				entry.getValue().remove(clientNode);
+				clientNode.getConnection().close();
+				return;
+			}
+		}
 	}
 
-	public AtomicInteger getNumThreads() {
-		return numThreads;
+	public static ConcurrentSkipListMap<Chatroom, ConcurrentSkipListSet<ClientNode>> getActiveChatRooms() {
+		return activeChatRooms;
 	}
 
-	public ConcurrentSkipListSet<Socket> getListOfThreads() {
-		return activeClientList;
+	public static Chatroom doesChatroomAlreadyExistByReference(int requestedChatroomToJoin) {
+		for (Entry<Chatroom, ConcurrentSkipListSet<ClientNode>> entry : activeChatRooms.entrySet()) {
+			if (entry.getKey().getChatroomId() == requestedChatroomToJoin) {
+				return entry.getKey();
+			}
+		}
+		return null;
 	}
 
 }
