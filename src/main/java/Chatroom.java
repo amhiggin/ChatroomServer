@@ -10,15 +10,15 @@ import java.util.List;
 public class Chatroom {
 
 	private List<ClientNode> listOfConnectedClients;
-	private int chatroomId;
+	private String chatroomId;
 	private ServerSocket chatroomSocket;
 
 	private PrintStream socketPrintStream = null;
 	private BufferedReader socketInputStream = null;
 
-	public Chatroom(int id) throws IOException {
+	public Chatroom(String id) throws IOException {
 		this.chatroomId = id;
-		this.chatroomSocket = new ServerSocket(id); // TODO make this better
+		this.chatroomSocket = new ServerSocket(Integer.parseInt(id));
 		this.listOfConnectedClients = new ArrayList<ClientNode>();
 	}
 
@@ -60,7 +60,7 @@ public class Chatroom {
 		return this.listOfConnectedClients;
 	}
 
-	public Integer getChatroomId() {
+	public String getChatroomId() {
 		return this.chatroomId;
 	}
 }

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -71,15 +73,18 @@ public class ChatroomServer {
 		return null;
 	}
 
-	private static ClientNode extractClientInfo(Socket clientSocket) throws IOException {
+	public static ClientNode extractClientInfo(Socket clientSocket) throws IOException {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		// FIXME (potentially) Assume that the request is in the first line
-		String clientSentence = inFromClient.readLine();
+		List<String> lines = new LinkedList<String>(); // create a new list
+		String line = inFromClient.readLine();
+		while (line != null) { // loop till you have no more lines
+			lines.add(line); // add the line to your list
+			line = inFromClient.readLine(); // try to read another line
+		}
 
-		// Check that the below works
-		String[] clientName = (clientSentence.split("CLIENT_NAME:", 0))[0].split("\n", 0);
-		String[] chatroomId = (clientSentence.split("CHAT:", 0))[0].split("\n", 0);
-		return new ClientNode(clientSocket, clientName[0], 0);
+		String[] clientName = (lines.get(3).split("CLIENT_NAME:", 0))[0].split("\n", 0);
+		String[] chatroomId = (lines.get(1).split("CHAT:", 0))[0].split("\n", 0);
+		return new ClientNode(clientSocket, clientName[0], chatroomId[0]);
 	}
 
 	private static void shutdown() {
@@ -151,7 +156,7 @@ public class ChatroomServer {
 		return activeChatRooms;
 	}
 
-	public static Chatroom doesChatroomAlreadyExistByReference(int requestedChatroomToJoin) {
+	public static Chatroom doesChatroomAlreadyExistByReference(String requestedChatroomToJoin) {
 		for (Entry<Chatroom, ConcurrentSkipListSet<ClientNode>> entry : activeChatRooms.entrySet()) {
 			if (entry.getKey().getChatroomId() == requestedChatroomToJoin) {
 				return entry.getKey();

@@ -60,7 +60,7 @@ public class ClientThread extends Thread {
 	private void joinChatroom() throws Exception {
 		String[] contentsAfterRequestType = this.messageReceived.split(":");
 		String[] restOfMessage = contentsAfterRequestType[1].split("\n");
-		int parsedRequestedChatroomToJoin = 0; // TODO parse this properly
+		String parsedRequestedChatroomToJoin = "0"; // TODO parse this properly
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer
 				.doesChatroomAlreadyExistByReference(parsedRequestedChatroomToJoin);
 		if (chatroomAlreadyOnRecord != null) {

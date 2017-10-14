@@ -6,9 +6,9 @@ public class ClientNode {
 
 	private Socket connection;
 	private String clientName;
-	private int chatroomId;
+	private String chatroomId;
 
-	public ClientNode(Socket connection, String clientName, int chatroomId) {
+	public ClientNode(Socket connection, String clientName, String chatroomId) {
 		this.connection = connection;
 		this.clientName = clientName;
 		this.chatroomId = chatroomId;
@@ -22,7 +22,7 @@ public class ClientNode {
 		return this.connection;
 	}
 
-	public int getChatroomId() {
+	public String getChatroomId() {
 		return this.chatroomId;
 	}
 
