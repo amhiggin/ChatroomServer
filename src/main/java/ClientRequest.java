@@ -4,13 +4,13 @@ package main.java;
  * Enum for possible valid requests from a client.
  */
 
-public enum Request {
+public enum ClientRequest {
 	HELO_TEXT("HELO text\n"), JOIN_CHATROOM("JOIN_CHATROOM"), CHAT("CHAT"), LEAVE_CHATROOM(
-			"LEAVE_CHATROOM"), KILL_SERVICE("KILL_SERVICE\n"), DISCONNECT("DISCONNECT");
+			"LEAVE_CHATROOM"), DISCONNECT("DISCONNECT");
 
 	private String value;
 
-	Request(final String value) {
+	ClientRequest(final String value) {
 		this.value = value;
 	}
 

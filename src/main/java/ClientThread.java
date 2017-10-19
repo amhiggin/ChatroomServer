@@ -2,27 +2,30 @@ package main.java;
 
 import java.io.IOException;
 
+/*
+ * Thread which is created for every new client interaction
+ * Handles requests from clients and performs required responses.
+ */
+
 public class ClientThread extends Thread {
 
 	private ClientNode clientNode;
 	private int serverPort;
-	private Request requestType;
+	private ClientRequest requestType;
 	private String messageReceived;
 
-	public ClientThread(ClientNode client, Request requestType, String message, int serverPort) {
+	public ClientThread(ClientNode client, ClientRequest requestType, String message, int serverPort) {
+		super();
 		this.clientNode = client;
 		this.serverPort = serverPort;
 		this.requestType = requestType;
 		this.messageReceived = message;
-		// At this point we need to know what chatroom we are going to talk to
-		// So this needs to be done on the server side
-		// Possible to have a null chatroom... use Integer and not int
 	}
 
 	@Override
 	public void run() {
 		try {
-			switch (requestType) {
+			switch (this.requestType) {
 			case JOIN_CHATROOM:
 				joinChatroom();
 				break;
@@ -42,57 +45,72 @@ public class ClientThread extends Thread {
 				return;
 			}
 		} catch (Exception e) {
-			handleError();
+			handleError(e.getMessage());
 		}
 	}
 
-	private void handleError() {
-		// TODO Implement using the Error enum
-
+	private void handleError(String exceptionMessage) {
+		ChatroomServer.handleError(exceptionMessage);
 	}
 
-	private Chatroom createChatroom() throws Exception {
+	private void createChatroomAndAddToServerRecords() throws Exception {
 		Chatroom chatroom = new Chatroom(clientNode.getChatroomId());
-		chatroom.addClientNode(clientNode);
-		return chatroom;
+		chatroom.addClientNodeAndNotifyMembersOfChatroom(clientNode);
+		ChatroomServer.getActiveChatRooms().put(chatroom, chatroom.getListOfConnectedClients());
 	}
 
 	private void joinChatroom() throws Exception {
+		// TODO correct the parsing using tests
 		String[] contentsAfterRequestType = this.messageReceived.split(":");
 		String[] restOfMessage = contentsAfterRequestType[1].split("\n");
-		String parsedRequestedChatroomToJoin = "0"; // TODO parse this properly
-		Chatroom chatroomAlreadyOnRecord = ChatroomServer
-				.doesChatroomAlreadyExistByReference(parsedRequestedChatroomToJoin);
-		if (chatroomAlreadyOnRecord != null) {
-			chatroomAlreadyOnRecord.addClientNode(clientNode);
-		} else {
-			createChatroom();
-		}
+		String parsedRequestedChatroomToJoin = this.clientNode.getChatroomId();
 
-		// identify which chatroom we want to join
-		// chatroom.addClientNode(clientNode);
-		// update the server with what happened too
+		Chatroom chatroomAlreadyOnRecord = ChatroomServer
+				.retrieveRequestedChatroomIfExists(parsedRequestedChatroomToJoin);
+		if (chatroomAlreadyOnRecord != null) {
+			chatroomAlreadyOnRecord.addClientNodeAndNotifyMembersOfChatroom(clientNode);
+		} else {
+			createChatroomAndAddToServerRecords();
+		}
 	}
 
-	private void leaveChatroom() {
-		// TODO @amber
-		// Figure out how to identify the chatroom the client is in
-		// Then call the removeNodeFromChatroom method
+	private void leaveChatroom() throws Exception {
+		// TODO correct the parsing using tests
+		String[] contentsAfterRequestType = this.messageReceived.split(":");
+		String[] restOfMessage = contentsAfterRequestType[1].split("\n");
+		String parsedRequestedChatroomToLeave = this.clientNode.getChatroomId();
+		Chatroom chatroomExists = ChatroomServer.retrieveRequestedChatroomIfExists(parsedRequestedChatroomToLeave);
+		if (chatroomExists != null) {
+			chatroomExists.removeClientNodeAndInformOtherMembers(this.clientNode);
+		}
 	}
 
 	private void sayHello() throws IOException {
 		String response = String.format("HELO text\nIP:[%s]\nPort:[%s]\nStudentID:[%s]", Constants.SERVER_IP,
 				this.serverPort, Constants.STUDENT_ID);
 		// TODO review whether below is correct
-		clientNode.getConnection().getOutputStream().write(response.getBytes());
+		this.clientNode.getConnection().getOutputStream().write(response.getBytes());
 	}
 
-	private void chat() {
-		// TODO implement
+	private void chat() throws IOException {
+		// TODO correct the parsing using tests
+		String[] contentsAfterRequestType = this.messageReceived.split(":");
+		String[] restOfMessage = contentsAfterRequestType[1].split("\n");
+		String parsedRequestedChatroomToJoin = this.clientNode.getChatroomId();
+
+		Chatroom chatroomAlreadyOnRecord = ChatroomServer
+				.retrieveRequestedChatroomIfExists(parsedRequestedChatroomToJoin);
+		if (chatroomAlreadyOnRecord != null) {
+			chatroomAlreadyOnRecord.broadcastMessageInChatroom(this.messageReceived);
+		}
 	}
 
-	private void disconnectFromServer() {
-		// TODO Auto-generated method stub
-
+	private void disconnectFromServer() throws Exception {
+		// get the entry corresponding to the chatroom its in
+		// then remove the chatroom from that entry
+		String parsedRequestedChatroomToJoin = this.clientNode.getChatroomId();
+		Chatroom chatroomAlreadyOnRecord = ChatroomServer
+				.retrieveRequestedChatroomIfExists(parsedRequestedChatroomToJoin);
+		chatroomAlreadyOnRecord.removeClientNodeAndInformOtherMembers(clientNode);
 	}
 }

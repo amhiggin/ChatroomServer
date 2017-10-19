@@ -17,9 +17,10 @@ public class ChatroomServer {
 	private static ServerSocket serverSocket;
 	private static AtomicBoolean terminateServer;
 	private static ConcurrentSkipListMap<Chatroom, ConcurrentSkipListSet<ClientNode>> activeChatRooms;
+	private static int serverPort;
 
 	/*
-	 * Server port is passed as arg[0]
+	 * Server port is passed as arg[0] - TODO handle "KILL_SERVICE\n" case
 	 */
 	public static void main(String[] args) {
 		try {
@@ -42,7 +43,8 @@ public class ChatroomServer {
 		if (args.length != 1) {
 			throw new Exception("Incorrect initialisation arguments supplied: expected port number.");
 		}
-		serverSocket = new ServerSocket(Integer.parseInt(args[0]));
+		serverPort = Integer.parseInt(args[0]);
+		serverSocket = new ServerSocket(getServerPort());
 		initialiseServerManagementVariables();
 		System.out.println(String.format("Server listening on port %s...", args[0]));
 	}
@@ -58,7 +60,7 @@ public class ChatroomServer {
 
 		// Extract connection-specific info
 		ClientNode client = extractClientInfo(clientSocket);
-		Request clientRequest = requestedAction(clientSocket);
+		ClientRequest clientRequest = requestedAction(clientSocket);
 		String message = getFullMessageFromClient(clientSocket);
 		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message,
 				serverSocket.getLocalPort());
@@ -82,9 +84,9 @@ public class ChatroomServer {
 			line = inFromClient.readLine(); // try to read another line
 		}
 
-		String[] clientName = (lines.get(3).split("CLIENT_NAME:", 0))[0].split("\n", 0);
-		String[] chatroomId = (lines.get(1).split("CHAT:", 0))[0].split("\n", 0);
-		return new ClientNode(clientSocket, clientName[0], chatroomId[0]);
+		String clientName = (lines.get(3).split("CLIENT_NAME:", 0))[1];
+		String chatroomId = (lines.get(0).split("JOIN_CHATROOM:", 0))[0];
+		return new ClientNode(clientSocket, clientName, chatroomId);
 	}
 
 	private static void shutdown() {
@@ -102,23 +104,23 @@ public class ChatroomServer {
 		}
 	}
 
-	static synchronized void recordClientChangeWithServer(Request requestedAction, ClientNode clientNode)
-			throws IOException {
+	static synchronized void recordClientChangeWithServer(ClientRequest requestedAction, ClientNode clientNode)
+			throws Exception {
 		if (clientNode != null) {
-			if (requestedAction.equals(Request.JOIN_CHATROOM) && !getActiveChatRooms().values().contains(clientNode)) {
+			if (requestedAction.equals(ClientRequest.JOIN_CHATROOM)
+					&& !getActiveChatRooms().values().contains(clientNode)) {
 				addClientRecordToServer(clientNode);
-			} else if (requestedAction.equals(Request.LEAVE_CHATROOM)
+			} else if (requestedAction.equals(ClientRequest.LEAVE_CHATROOM)
 					&& getActiveChatRooms().values().contains(clientNode)) {
-				removeClientRecordFromServer(clientNode,
-						doesChatroomAlreadyExistByReference(clientNode.getChatroomId()));
+				removeClientRecordFromServer(clientNode, retrieveRequestedChatroomIfExists(clientNode.getChatroomId()));
 			}
 		}
 	}
 
-	public static Request requestedAction(Socket clientSocket) throws IOException {
+	public static ClientRequest requestedAction(Socket clientSocket) throws IOException {
 		String requestType = parseClientRequest(clientSocket);
 		try {
-			return Request.valueOf(requestType);
+			return ClientRequest.valueOf(requestType);
 		} catch (Exception e) {
 			return null;
 		}
@@ -156,13 +158,33 @@ public class ChatroomServer {
 		return activeChatRooms;
 	}
 
-	public static Chatroom doesChatroomAlreadyExistByReference(String requestedChatroomToJoin) {
+	public static Chatroom retrieveRequestedChatroomIfExists(String requestedChatroomToJoin) {
 		for (Entry<Chatroom, ConcurrentSkipListSet<ClientNode>> entry : activeChatRooms.entrySet()) {
 			if (entry.getKey().getChatroomId() == requestedChatroomToJoin) {
 				return entry.getKey();
 			}
 		}
 		return null;
+	}
+
+	public static int getServerPort() {
+		return serverPort;
+	}
+
+	public static synchronized ConcurrentSkipListSet<ClientNode> getAllConnectedClients() {
+		ConcurrentSkipListSet<ClientNode> allClients = new ConcurrentSkipListSet<ClientNode>();
+		for (ConcurrentSkipListSet<ClientNode> clients : activeChatRooms.values()) {
+			for (ClientNode node : clients) {
+				allClients.add(node);
+			}
+		}
+		return allClients;
+	}
+
+	public static void handleError(String string) {
+		// TODO Auto-generated method stub
+		// TODO implement using the Error enum
+
 	}
 
 }

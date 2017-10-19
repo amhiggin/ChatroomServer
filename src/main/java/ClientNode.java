@@ -2,6 +2,12 @@ package main.java;
 
 import java.net.Socket;
 
+/*
+ * An object for storing the info about a client connection.
+ * Assumed that a client may only be a member of 1 chatroom at a time.
+ * 
+ */
+
 public class ClientNode {
 
 	private Socket connection;
