@@ -131,19 +131,6 @@ public class ClientThread extends Thread {
 		ChatroomServer.recordClientChangeWithServer(ClientRequest.DISCONNECT, clientNode);
 	}
 
-	private void sendResponseToClient(ServerResponse serverResponse) throws IOException {
-		String response = null;
-		switch (serverResponse) {
-		case JOIN:
-			response = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
-					this.serverPort, this.clientNode.getChatroomId(), this.clientNode.getJoinId());
-			break;
-		case LEAVE:
-
-		}
-		writeResponseToClient(response);
-	}
-
 	private void writeResponseToClient(String response) throws IOException {
 		this.clientNode.getConnection().getOutputStream().write(response.getBytes());
 	}
