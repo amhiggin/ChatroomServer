@@ -7,7 +7,7 @@ public class Constants {
 	/*
 	 * The following Constants should be used with String.format(msg, args[])
 	 */
-	public static final String JOINED_CHATROOM = "JOINED_CHATROOM: %s\n" + "SERVER_IP: %s\n" + "PORT: %s\n"
+	public static final String JOINED_CHATROOM_RESPONSE = "JOINED_CHATROOM: %s\n" + "SERVER_IP: %s\n" + "PORT: %s\n"
 			+ "ROOM_REF: %s\n" + "JOIN_ID: %s";
 
 	public static final String DISCONNECT_RESPONSE = "DISCONNECT: %s\n" + "PORT: %s\n" + "CLIENT_NAME: %s";

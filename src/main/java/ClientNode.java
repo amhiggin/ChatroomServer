@@ -13,11 +13,13 @@ public class ClientNode {
 	private Socket connection;
 	private String clientName;
 	private String chatroomId;
+	private Integer joinId;
 
-	public ClientNode(Socket connection, String clientName, String chatroomId) {
+	public ClientNode(Socket connection, String clientName, String chatroomId, Integer joinId) {
 		this.connection = connection;
 		this.clientName = clientName;
 		this.chatroomId = chatroomId;
+		this.joinId = joinId;
 	}
 
 	public String getName() {
@@ -30,6 +32,14 @@ public class ClientNode {
 
 	public String getChatroomId() {
 		return this.chatroomId;
+	}
+
+	public Integer getJoinId() {
+		return this.joinId;
+	}
+
+	public void setJoinId(Integer joinId) {
+		this.joinId = joinId;
 	}
 
 }
