@@ -12,7 +12,7 @@ public class ClientNode {
 
 	private Socket connection;
 	private String clientName;
-	private String chatroomId;
+	private String chatroomId; // CHECK
 	private Integer joinId;
 
 	public ClientNode(Socket connection, String clientName, String chatroomId, Integer joinId) {

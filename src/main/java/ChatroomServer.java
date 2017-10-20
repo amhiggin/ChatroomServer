@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChatroomServer {
 
+	private static final int UNDEFINED_JOIN_ID = -1;
 	private static final String JOIN_CHATROOM_IDENTIFIER = "JOIN_CHATROOM: ";
 	private static final String CHAT_IDENTIFIER = "CHAT: ";
 	private static final String LEAVE_CHATROOM_IDENTIFIER = "LEAVE_CHATROOM: ";
@@ -33,7 +34,7 @@ public class ChatroomServer {
 	public static void main(String[] args) {
 		try {
 			initialiseServer(args[0]);
-			while (true && !terminateServer.equals(Boolean.TRUE)) {
+			while (!terminateServer.equals(Boolean.TRUE)) {
 				try {
 					handleIncomingConnection();
 				} catch (Exception e) {
@@ -44,14 +45,15 @@ public class ChatroomServer {
 			System.out.println(String.format("Error while initialising server: %s", e));
 		} finally {
 			shutdown();
+			// exit(0);
 		}
 	}
 
-	public static void initialiseServer(String string) throws Exception {
-		serverPort = Integer.parseInt(string);
-		serverSocket = new ServerSocket(getServerPort());
+	public static void initialiseServer(String portSpecified) throws Exception {
+		serverPort = Integer.parseInt(portSpecified);
+		serverSocket = new ServerSocket(serverPort);
 		initialiseServerManagementVariables();
-		System.out.println(String.format("Server listening on port %s...", string));
+		System.out.println(String.format("Server listening on port %s...", portSpecified));
 	}
 
 	private static void initialiseServerManagementVariables() {
@@ -67,8 +69,7 @@ public class ChatroomServer {
 		ClientRequest clientRequest = requestedAction(clientSocket);
 		ClientNode client = extractClientInfo(clientSocket, clientRequest);
 		List<String> message = getFullMessageFromClient(clientSocket);
-		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message,
-				serverSocket.getLocalPort());
+		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message);
 
 		newClientConnectionThread.start();
 		recordClientChangeWithServer(clientRequest, client);
@@ -100,9 +101,12 @@ public class ChatroomServer {
 					fullMessage.get(0).split(LEAVE_CHATROOM_IDENTIFIER, 0)[1],
 					Integer.parseInt(fullMessage.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]));
 		case DISCONNECT:
-			return new ClientNode(clientSocket, fullMessage.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null, -1);
-		case HELO_TEXT:
-			return new ClientNode(clientSocket, null, null, -1);
+			return new ClientNode(clientSocket, fullMessage.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null,
+					UNDEFINED_JOIN_ID);
+		case HELO:
+			return new ClientNode(clientSocket, null, null, UNDEFINED_JOIN_ID);
+		case KILL_SERVICE:
+			return new ClientNode(null, null, null, UNDEFINED_JOIN_ID);
 		default:
 			return null;
 		}
@@ -205,6 +209,10 @@ public class ChatroomServer {
 	public static void handleError(Exception e) {
 		// TODO @Amber implement using the Error enum
 
+	}
+
+	public static void setTerminateServer(AtomicBoolean value) {
+		terminateServer = value;
 	}
 
 }

@@ -2,23 +2,25 @@ package main.java;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * Thread which is created for every new client interaction.
- * Enables handling requests and responses in parallel.
+ * Enables handling multiple requests and responses in parallel.
  */
 
 public class ClientThread extends Thread {
+
+	private static final String HELO_IDENTIFIER = "HELO ";
 
 	private ClientNode clientNode;
 	private int serverPort;
 	private ClientRequest requestType;
 	private List<String> receivedFromClient;
 
-	public ClientThread(ClientNode client, ClientRequest requestType, List<String> receivedFromClient, int serverPort) {
+	public ClientThread(ClientNode client, ClientRequest requestType, List<String> receivedFromClient) {
 		super();
 		this.clientNode = client;
-		this.serverPort = serverPort;
 		this.requestType = requestType;
 		this.receivedFromClient = receivedFromClient;
 	}
@@ -30,7 +32,7 @@ public class ClientThread extends Thread {
 			case JOIN_CHATROOM:
 				joinChatroom();
 				break;
-			case HELO_TEXT:
+			case HELO:
 				sayHello();
 				break;
 			case LEAVE_CHATROOM:
@@ -42,12 +44,19 @@ public class ClientThread extends Thread {
 			case DISCONNECT:
 				disconnectFromServer();
 				break;
+			case KILL_SERVICE:
+				killService();
+				break;
 			default:
 				return;
 			}
 		} catch (Exception e) {
 			handleError(e);
 		}
+	}
+
+	private void killService() {
+		ChatroomServer.setTerminateServer(new AtomicBoolean(true));
 	}
 
 	private void handleError(Exception e) {
@@ -75,7 +84,8 @@ public class ClientThread extends Thread {
 			requestedChatroom = createChatroomAndAddToServerRecords();
 			requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
 			// update server records
-			ChatroomServer.getActiveChatRooms().put(requestedChatroom, requestedChatroom.getSetOfConnectedClients());
+			ChatroomServer.getActiveChatRooms().put(requestedChatroom, requestedChatroom.getSetOfConnectedClients()); // TODO
+																														// REMOVE
 		}
 		String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
 				this.serverPort, this.clientNode.getChatroomId(), this.clientNode.getJoinId());
@@ -102,8 +112,9 @@ public class ClientThread extends Thread {
 	}
 
 	private void sayHello() throws IOException {
-		String response = String.format("HELO text\nIP:[%s]\nPort:[%s]\nStudentID:[%s]", Constants.SERVER_IP,
-				this.serverPort, Constants.STUDENT_ID);
+		String response = String.format(ServerResponse.HELO.getValue(),
+				this.receivedFromClient.get(3).split(HELO_IDENTIFIER)[1], Constants.SERVER_IP, this.serverPort,
+				Constants.STUDENT_ID);
 		writeResponseToClient(response);
 	}
 
@@ -115,7 +126,7 @@ public class ClientThread extends Thread {
 			String responseToClient = String.format(ServerResponse.CHAT.getValue(),
 					chatroomAlreadyOnRecord.getChatroomId(), this.clientNode.getJoinId(), this.clientNode.getName(),
 					message);
-			writeResponseToClient(responseToClient);
+			chatroomAlreadyOnRecord.broadcastMessageInChatroom(responseToClient);
 		}
 	}
 
