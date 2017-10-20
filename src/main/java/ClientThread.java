@@ -116,14 +116,10 @@ public class ClientThread extends Thread {
 					chatroomAlreadyOnRecord.getChatroomId(), this.clientNode.getJoinId(), this.clientNode.getName(),
 					message);
 			writeResponseToClient(responseToClient);
-			chatroomAlreadyOnRecord.broadcastMessageInChatroom(
-					String.format("Client %s has left the chatroom.", this.clientNode.getJoinId()));
 		}
 	}
 
 	private void disconnectFromServer() throws Exception {
-		// get the entry corresponding to the chatroom its in
-		// then remove the chatroom from that entry
 		String parsedRequestedChatroomToLeave = this.clientNode.getChatroomId();
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer
 				.retrieveRequestedChatroomIfExists(parsedRequestedChatroomToLeave);
