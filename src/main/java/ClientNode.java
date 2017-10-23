@@ -8,7 +8,7 @@ import java.net.Socket;
  * 
  */
 
-public class ClientNode {
+public class ClientNode implements Comparable<ClientNode> {
 
 	private Socket connection;
 	private String clientName;
@@ -40,6 +40,16 @@ public class ClientNode {
 
 	public void setJoinId(Integer joinId) {
 		this.joinId = joinId;
+	}
+
+	@Override
+	public int compareTo(ClientNode o) {
+		if (this.getJoinId() < o.getJoinId()) {
+			return -1;
+		} else if (this.getJoinId() > o.getJoinId()) {
+			return 1;
+		}
+		return 0;
 	}
 
 }

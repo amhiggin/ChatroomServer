@@ -49,19 +49,23 @@ public class ClientThreadTest {
 			Assert.fail("Fully executed thread for chat request");
 		}
 
+		// Now see if that thread can leave the chatroom node = new
+		node = new ClientNode(constants.mockLeaveClientSocket, TestConstants.CLIENT_A, "1", 1);
+		thread = new ClientThread(node, ClientRequest.LEAVE_CHATROOM, TestConstants.mockClientLeaveRequest);
+		try {
+			thread.run();
+		} catch (Exception e) {
+			Assert.fail("Fully executed thread for leave request");
+		}
+
+		// Now see if after leaving, the message is still sent to the client
+		try {
+			thread.run();
+		} catch (Exception e) {
+			Assert.fail("Fully executed thread for leave request after already leaving, but not disconnecting");
+		}
+
 		/*
-		 * // Now see if that thread can leave the chatroom node = new
-		 * ClientNode(constants.mockLeaveClientSocket, TestConstants.CLIENT_A,
-		 * "1", 1); thread = new ClientThread(node,
-		 * ClientRequest.LEAVE_CHATROOM, TestConstants.mockClientLeaveRequest);
-		 * try { thread.run(); } catch (Exception e) { Assert.fail(
-		 * "Fully executed thread for leave request"); }
-		 * 
-		 * // Now see if after leaving, the message is still sent to the client
-		 * try { thread.run(); } catch (Exception e) { Assert.fail(
-		 * "Fully executed thread for leave request after already leaving, but not disconnecting"
-		 * ); }
-		 * 
 		 * // Now see if we can disconnect node = new
 		 * ClientNode(constants.mockDisconnectClientSocket,
 		 * TestConstants.CLIENT_A, "1", 1); thread = new ClientThread(node,
@@ -69,6 +73,7 @@ public class ClientThreadTest {
 		 * try { thread.run(); } catch (Exception e) { Assert.fail(
 		 * "Fully executed thread for leave request"); }
 		 */
+
 	}
 
 }

@@ -45,7 +45,6 @@ public class ChatroomServer {
 			System.out.println(String.format("Error while initialising server: %s", e));
 		} finally {
 			shutdown();
-			// exit(0);
 		}
 	}
 

@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientThread extends Thread {
 
+	private static final String SPLIT_PATTERN = ": ";
+
 	private static final String HELO_IDENTIFIER = "HELO ";
 
 	private ClientNode clientNode;
@@ -84,8 +86,7 @@ public class ClientThread extends Thread {
 			requestedChatroom = createChatroomAndAddToServerRecords();
 			requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
 			// update server records
-			ChatroomServer.getActiveChatRooms().put(requestedChatroom, requestedChatroom.getSetOfConnectedClients()); // TODO
-																														// REMOVE
+			ChatroomServer.getActiveChatRooms().put(requestedChatroom, requestedChatroom.getSetOfConnectedClients());
 		}
 		String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
 				this.serverPort, this.clientNode.getChatroomId(), this.clientNode.getJoinId());
@@ -100,11 +101,11 @@ public class ClientThread extends Thread {
 		 * server on join] CLIENT_NAME: [string Handle to identifier client
 		 * user]
 		 */
-		String parsedRequestedChatroomToLeave = this.clientNode.getChatroomId();
-		Chatroom chatroomExists = ChatroomServer.retrieveRequestedChatroomIfExists(parsedRequestedChatroomToLeave);
-		if (chatroomExists != null) {
+		String requestedChatroomToLeave = this.clientNode.getChatroomId();
+		Chatroom existingChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToLeave);
+		if (existingChatroom != null) {
 			// NOTE: don't need to remove client from server records
-			chatroomExists.removeClientNodeAndInformOtherMembers(this.clientNode);
+			existingChatroom.removeClientNodeAndInformOtherMembers(this.clientNode);
 		}
 		String responseToClient = String.format(ServerResponse.LEAVE.getValue(), this.clientNode.getChatroomId(),
 				this.clientNode.getJoinId());
@@ -119,7 +120,7 @@ public class ClientThread extends Thread {
 	}
 
 	private void chat() throws IOException {
-		String message = this.receivedFromClient.get(3).split(":", 0)[1];
+		String message = this.receivedFromClient.get(3).split(SPLIT_PATTERN, 0)[1];
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer
 				.retrieveRequestedChatroomIfExists(this.clientNode.getChatroomId());
 		if (chatroomAlreadyOnRecord != null) {

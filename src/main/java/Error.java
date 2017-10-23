@@ -8,7 +8,11 @@ package main.java;
  */
 
 public enum Error {
-	InvalidRequest(0, "Invalid request provided");
+	InvalidRequest(0, "Invalid request provided"), JoinChatroom(1,
+			"Error occurred when attempting to join chatroom"), Chat(2,
+					"Error occurred when trying to chat"), LeaveChatroom(3,
+							"Error occurred when trying to leave chatroom"), KillService(4,
+									"Error occurred when trying to leave the chatroom");
 
 	private int errorCode;
 	private String description;

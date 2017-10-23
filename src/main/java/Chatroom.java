@@ -15,8 +15,8 @@ public class Chatroom {
 	}
 
 	public void removeClientNodeAndInformOtherMembers(ClientNode node) throws Exception {
-		if (listOfConnectedClients.contains(node)) {
-			listOfConnectedClients.remove(node);
+		if (this.listOfConnectedClients.contains(node)) {
+			this.listOfConnectedClients.remove(node);
 			broadcastMessageInChatroom(String.format("Client %s has left the chatroom", node.getName()));
 		}
 	}
