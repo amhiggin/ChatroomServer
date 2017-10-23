@@ -64,16 +64,34 @@ public class ClientThreadTest {
 		} catch (Exception e) {
 			Assert.fail("Fully executed thread for leave request after already leaving, but not disconnecting");
 		}
+	}
 
-		/*
-		 * // Now see if we can disconnect node = new
-		 * ClientNode(constants.mockDisconnectClientSocket,
-		 * TestConstants.CLIENT_A, "1", 1); thread = new ClientThread(node,
-		 * ClientRequest.LEAVE_CHATROOM, TestConstants.mockClientLeaveRequest);
-		 * try { thread.run(); } catch (Exception e) { Assert.fail(
-		 * "Fully executed thread for leave request"); }
-		 */
+	@Test
+	public void testIfDisconnectingClientWorksCorrectly() throws Exception {
+		ChatroomServer.initialiseServer("23456");
 
+		// First test if the join thread is handled correctly
+		ClientNode node = new ClientNode(constants.mockJoinClientSocket, TestConstants.CLIENT_A, "1", 1);
+		ClientThread thread = new ClientThread(node, ClientRequest.JOIN_CHATROOM, TestConstants.mockClientJoinRequest);
+		try {
+			thread.run();
+		} catch (Exception e) {
+			Assert.fail("Fully executed thread for join request");
+		}
+
+		// TODO @Amber correct the implementation such that the client can
+		// leave...
+		// Should also be able to close the socket connection
+		// // Now see if we can disconnect node
+		// node = new ClientNode(constants.mockDisconnectClientSocket,
+		// TestConstants.CLIENT_A, "1", 1);
+		// thread = new ClientThread(node, ClientRequest.DISCONNECT,
+		// TestConstants.mockClientDisconnectRequest);
+		// try {
+		// thread.run();
+		// } catch (Exception e) {
+		// Assert.fail("Fully executed thread for leave request");
+		// }
 	}
 
 }
