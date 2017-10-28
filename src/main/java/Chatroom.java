@@ -31,9 +31,9 @@ public class Chatroom {
 		throw new Exception(String.format("Client %s already added to chatroom %s", node.getName(), this.chatroomId));
 	}
 
-	// TODO @Amber 19/10/17 - assuming for now that this is how chat also
-	// happens
-	public void broadcastMessageInChatroom(String message) throws IOException {
+	// Synchronized to account for completion of message sending before allowing
+	// client to leave chatroom
+	public synchronized void broadcastMessageInChatroom(String message) throws IOException {
 		for (ClientNode client : listOfConnectedClients) {
 			// TODO review whether this is the correct way to do this
 			PrintStream socketPrintStream = new PrintStream(client.getConnection().getOutputStream());
