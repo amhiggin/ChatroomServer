@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChatroomServer {
 
+	private static final String SPLIT_CRITERIA = ": ";
 	private static final int UNDEFINED_JOIN_ID = -1;
 	private static final String JOIN_CHATROOM_IDENTIFIER = "JOIN_CHATROOM: ";
 	private static final String CHAT_IDENTIFIER = "CHAT: ";
@@ -39,11 +40,11 @@ public class ChatroomServer {
 				try {
 					handleIncomingConnection();
 				} catch (Exception e) {
-					System.out.println(String.format("Error handling connection: %s", e));
+					System.out.println(String.format("%s>> Error handling connection: %s", getCurrentDateTime(), e));
 				}
 			}
 		} catch (Exception e) {
-			System.out.println(String.format("Error while initialising server: %s", e));
+			System.out.println(String.format("%s>> Error while initialising server: %s", getCurrentDateTime(), e));
 		} finally {
 			shutdown();
 		}
@@ -79,7 +80,7 @@ public class ChatroomServer {
 		List<String> message = getFullMessageFromClient(clientSocket);
 		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message);
 
-		newClientConnectionThread.start();
+		newClientConnectionThread.run();
 	}
 
 	private static List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
@@ -161,7 +162,7 @@ public class ChatroomServer {
 	private static String parseClientRequestType(Socket clientSocket) throws IOException {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		String clientSentence = inFromClient.readLine();
-		String[] requestType = clientSentence.split(": ", 0);
+		String[] requestType = clientSentence.split(SPLIT_CRITERIA, 0);
 		return requestType[0];
 	}
 
@@ -173,13 +174,13 @@ public class ChatroomServer {
 
 	private static void removeClientRecordFromServer(ClientNode clientNode, Chatroom requestedChatroom)
 			throws IOException {
+		// Note this involves removing from chatroom too
 		for (Chatroom chatroom : getActiveChatRooms()) {
 			if (chatroom == requestedChatroom) {
 				chatroom.getSetOfConnectedClients().remove(clientNode);
 				break;
 			}
 		}
-		// Remove record from server too
 		connectedClients.remove(clientNode);
 		clientNode.getConnection().close();
 		return;
@@ -211,7 +212,7 @@ public class ChatroomServer {
 	}
 
 	public static void outputRequestErrorMessageToConsole(String errorResponse, ClientNode clientNode) {
-		String output = String.format("%s>> ERROR processing request (client %s): %s", getCurrentDateTime(),
+		String output = String.format("%s>> Error processing request (client %s): %s", getCurrentDateTime(),
 				clientNode.getName(), errorResponse);
 		System.out.println(output);
 	}

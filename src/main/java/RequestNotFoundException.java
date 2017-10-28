@@ -11,7 +11,6 @@ public class RequestNotFoundException extends Exception {
 
 	public RequestNotFoundException(Throwable arg0) {
 		super(arg0);
-		// TODO Auto-generated constructor stub
 	}
 
 	public RequestNotFoundException(String arg0, Throwable arg1) {

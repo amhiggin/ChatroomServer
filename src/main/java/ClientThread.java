@@ -33,7 +33,7 @@ public class ClientThread extends Thread {
 	public void run() {
 		try {
 			if (this.requestType == null) {
-				handleError(Error.InvalidRequest);
+				handleRequestProcessingError(Error.InvalidRequest);
 				return;
 			}
 			switch (this.requestType) {
@@ -56,12 +56,12 @@ public class ClientThread extends Thread {
 				killService();
 				break;
 			default:
-				handleError(Error.InvalidRequest);
-				return;
+				handleRequestProcessingError(Error.InvalidRequest);
+				throw new RequestNotFoundException();
 			}
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
 		} catch (Exception e) {
-			// TODO figure out how to handle the generic exception
+			System.out.println(String.format("Service Exception: %s", e));
 		}
 	}
 
@@ -74,11 +74,11 @@ public class ClientThread extends Thread {
 			; // Do nothing
 		}
 		if (!ChatroomServer.getServerSocket().isClosed()) {
-			handleError(Error.KillService);
+			handleRequestProcessingError(Error.KillService);
 		}
 	}
 
-	private void handleError(Error errorMessage) {
+	private void handleRequestProcessingError(Error errorMessage) {
 		String errorResponse = String.format(ServerResponse.ERROR.getValue(), errorMessage.getValue(),
 				errorMessage.getDescription());
 		try {
@@ -118,7 +118,7 @@ public class ClientThread extends Thread {
 			requestedChatroom.broadcastMessageInChatroom(
 					String.format("A new client called %s has joined the chatroom!", clientNode.getName()));
 		} catch (Exception e) {
-			handleError(Error.JoinChatroom);
+			handleRequestProcessingError(Error.JoinChatroom);
 		}
 	}
 
@@ -139,7 +139,7 @@ public class ClientThread extends Thread {
 					this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
 		} catch (Exception e) {
-			handleError(Error.LeaveChatroom);
+			handleRequestProcessingError(Error.LeaveChatroom);
 		}
 	}
 
@@ -148,7 +148,7 @@ public class ClientThread extends Thread {
 			String response = constructHelloResponse(this.receivedFromClient);
 			writeResponseToClient(response);
 		} catch (Exception e) {
-			handleError(Error.Helo);
+			handleRequestProcessingError(Error.Helo);
 		}
 	}
 
@@ -169,7 +169,7 @@ public class ClientThread extends Thread {
 			chatroomAlreadyOnRecord.broadcastMessageInChatroom(responseToClient);
 			return;
 		}
-		handleError(Error.Chat);
+		handleRequestProcessingError(Error.Chat);
 	}
 
 	private void disconnectFromServer() throws Exception {

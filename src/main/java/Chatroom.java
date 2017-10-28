@@ -35,7 +35,6 @@ public class Chatroom {
 	// client to leave chatroom
 	public synchronized void broadcastMessageInChatroom(String message) throws IOException {
 		for (ClientNode client : listOfConnectedClients) {
-			// TODO review whether this is the correct way to do this
 			PrintStream socketPrintStream = new PrintStream(client.getConnection().getOutputStream());
 			socketPrintStream.print(message);
 		}
