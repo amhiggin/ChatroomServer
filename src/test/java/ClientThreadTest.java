@@ -1,5 +1,7 @@
 package test.java;
 
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -79,7 +81,7 @@ public class ClientThreadTest {
 			Assert.fail("Fully executed thread for join request");
 		}
 
-		// First test if the join thread is handled correctly
+		// Now test if the same client can leave the chatroom
 		node = new ClientNode(constants.mockDisconnectClientSocket, TestConstants.CLIENT_A, "1", 1);
 		thread = new ClientThread(node, ClientRequest.DISCONNECT, TestConstants.mockClientDisconnectRequest);
 		try {
@@ -87,6 +89,9 @@ public class ClientThreadTest {
 		} catch (Exception e) {
 			Assert.fail("Fully executed thread for disconnect request");
 		}
+
+		assertTrue("Client node no longer exists in server records",
+				!ChatroomServer.getAllConnectedClients().contains(node));
 	}
 
 }
