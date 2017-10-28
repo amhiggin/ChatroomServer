@@ -155,7 +155,7 @@ public class ChatroomServer {
 		return requestType[0];
 	}
 
-	private static void addClientRecordToServer(ClientNode clientNode) {
+	public static void addClientRecordToServer(ClientNode clientNode) {
 		if (!getAllConnectedClients().contains(clientNode)) {
 			getAllConnectedClients().add(clientNode);
 		}

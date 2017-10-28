@@ -31,6 +31,7 @@ public class TestConstants {
 			"CLIENT_NAME: client a");
 	public static final List<String> mockClientKillServiceRequest = Arrays.asList("KILL SERVICE\n");
 	public static final List<String> mockClientHeloRequest = Arrays.asList("HELO Hello hello\n\n");
+	public static final String TEST_PORT = "23456";
 
 	public Socket mockJoinClientSocket;
 	public Socket mockChatClientSocket;

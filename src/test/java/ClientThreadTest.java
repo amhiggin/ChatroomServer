@@ -2,7 +2,9 @@ package test.java;
 
 import static org.junit.Assert.assertTrue;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import main.java.ChatroomServer;
@@ -13,6 +15,16 @@ import main.java.ClientThread;
 public class ClientThreadTest {
 
 	public TestConstants constants = new TestConstants();
+
+	@BeforeClass
+	public static void setUp() throws Exception {
+		ChatroomServer.initialiseServer(TestConstants.TEST_PORT);
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		ChatroomServer.shutdown();
+	}
 
 	@Test
 	public void testNullClientNodeHandledCorrectly() {
@@ -31,8 +43,6 @@ public class ClientThreadTest {
 
 	@Test
 	public void testPopulatedClientRequestNodesHandledCorrectly() throws Exception {
-		ChatroomServer.initialiseServer("23456");
-
 		// First test if the join thread is handled correctly
 		ClientNode node = new ClientNode(constants.mockJoinClientSocket, TestConstants.CLIENT_A, "1", 1);
 		ClientThread thread = new ClientThread(node, ClientRequest.JOIN_CHATROOM, TestConstants.mockClientJoinRequest);
@@ -71,15 +81,10 @@ public class ClientThreadTest {
 		} catch (Exception e) {
 			Assert.fail("Fully executed thread for leave request after already leaving, but not disconnecting");
 		}
-
-		ChatroomServer.shutdown();
-
 	}
 
 	@Test
 	public void testIfDisconnectingClientWorksCorrectly() throws Exception {
-		ChatroomServer.initialiseServer("24689");
-
 		// First test if the join thread is handled correctly
 		ClientNode node = new ClientNode(constants.mockJoinClientSocket, TestConstants.CLIENT_A, "1", 1);
 		ClientThread thread = new ClientThread(node, ClientRequest.JOIN_CHATROOM, TestConstants.mockClientJoinRequest);
@@ -100,8 +105,6 @@ public class ClientThreadTest {
 
 		assertTrue("Client node no longer exists in server records",
 				!ChatroomServer.getAllConnectedClients().contains(node));
-
-		ChatroomServer.shutdown();
 	}
 
 }
