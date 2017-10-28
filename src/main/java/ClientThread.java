@@ -30,6 +30,10 @@ public class ClientThread extends Thread {
 	@Override
 	public void run() {
 		try {
+			if (this.requestType == null) {
+				handleError(Error.InvalidRequest);
+				return;
+			}
 			switch (this.requestType) {
 			case JOIN_CHATROOM:
 				joinChatroom();
@@ -50,6 +54,7 @@ public class ClientThread extends Thread {
 				killService();
 				break;
 			default:
+				handleError(Error.InvalidRequest);
 				return;
 			}
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
@@ -62,7 +67,10 @@ public class ClientThread extends Thread {
 		ChatroomServer.setTerminateServer(new AtomicBoolean(true));
 	}
 
-	private void handleError(Error chat) {
+	private void handleError(Error chat) throws IOException {
+		String errorResponse = String.format(ServerResponse.ERROR.getValue(), chat.getValue(), chat.getDescription());
+		this.clientNode.getConnection().getOutputStream().write(errorResponse.getBytes());
+		ChatroomServer.outputErrorMessageToConsole(errorResponse, this.clientNode);
 	}
 
 	private Chatroom createChatroom() throws Exception {

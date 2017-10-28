@@ -209,4 +209,11 @@ public class ChatroomServer {
 		terminateServer = value;
 	}
 
+	public static void outputErrorMessageToConsole(String errorResponse, ClientNode clientNode) {
+		String output = String.format("%s>> ERROR processing request (client %s): %s", getCurrentDateTime(),
+				clientNode.getName(), errorResponse);
+		System.out.println(output);
+
+	}
+
 }

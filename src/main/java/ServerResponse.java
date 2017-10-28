@@ -9,7 +9,8 @@ public enum ServerResponse {
 			"LEFT_CHATROOM: %s\n" + "JOIN_ID: %s"), CHAT(
 					"CHAT: %s\n" + "JOIN_ID: %s\n" + "CLIENT_NAME: %s\n" + "MESSAGE: %s\n\n"), DISCONNECT(
 							"DISCONNECT: %s\n" + "PORT: %s\n" + "CLIENT_NAME: %s"), HELO(
-									"HELO %s\n" + "IP: %s\n" + "Port: %s\n" + "StudentID: %s");
+									"HELO %s\n" + "IP: %s\n" + "Port: %s\n" + "StudentID: %s"), ERROR(
+											"ERROR_CODE: %s\n" + "ERROR_DESCRIPTION: %s");
 
 	private String value;
 

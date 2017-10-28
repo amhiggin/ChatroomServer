@@ -2,6 +2,8 @@ package test.java;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -111,6 +113,17 @@ public class ClientThreadTest {
 	public void testHelloRequest() {
 		ClientNode node = new ClientNode(constants.mockHelloClientSocket, null, null, -1);
 		ClientThread thread = new ClientThread(node, ClientRequest.HELO, TestConstants.mockClientHeloRequest);
+		try {
+			thread.run();
+		} catch (Exception e) {
+			Assert.fail("Fully executed thread for hello request");
+		}
+	}
+
+	@Test
+	public void testErrorHandlingOfInvalidRequest() {
+		ClientNode node = new ClientNode(constants.mockHelloClientSocket, "Toto was here", "Hello there friend", -15);
+		ClientThread thread = new ClientThread(node, null, Arrays.asList("Toto was here"));
 		try {
 			thread.run();
 		} catch (Exception e) {
