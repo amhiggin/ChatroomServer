@@ -52,4 +52,13 @@ public class ClientNode implements Comparable<ClientNode> {
 		return 0;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(String.format("Client name: %s\n", this.getName()));
+		builder.append(String.format("ChatroomId: %s\n", this.getChatroomId()));
+		builder.append(String.format("JoinId: %s\n", this.getJoinId()));
+		return builder.toString();
+	}
+
 }

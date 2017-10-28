@@ -60,17 +60,23 @@ public class ClientThreadTest {
 			Assert.fail("Fully executed thread for leave request");
 		}
 
-		// Now see if after leaving, the message is still sent to the client
+		// Now see that the server retains a record of the client
+		assertTrue("Client record still kept with server after leaving chatroom",
+				ChatroomServer.getAllConnectedClients().contains(node));
+
+		// Now see if after leaving, the "leave" message is still sent to the
+		// client
 		try {
 			thread.run();
 		} catch (Exception e) {
 			Assert.fail("Fully executed thread for leave request after already leaving, but not disconnecting");
 		}
+
 	}
 
 	@Test
 	public void testIfDisconnectingClientWorksCorrectly() throws Exception {
-		ChatroomServer.initialiseServer("23456");
+		ChatroomServer.initialiseServer("24689");
 
 		// First test if the join thread is handled correctly
 		ClientNode node = new ClientNode(constants.mockJoinClientSocket, TestConstants.CLIENT_A, "1", 1);

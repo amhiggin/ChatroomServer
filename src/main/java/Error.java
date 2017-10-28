@@ -12,7 +12,9 @@ public enum Error {
 			"Error occurred when attempting to join chatroom"), Chat(2,
 					"Error occurred when trying to chat"), LeaveChatroom(3,
 							"Error occurred when trying to leave chatroom"), KillService(4,
-									"Error occurred when trying to leave the chatroom");
+									"Error occurred when trying to kill the server"), Helo(5,
+											"Error occurred when trying to process hello request"), GenericFailure(6,
+													"Generic failure");
 
 	private int errorCode;
 	private String description;

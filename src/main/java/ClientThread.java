@@ -52,8 +52,9 @@ public class ClientThread extends Thread {
 			default:
 				return;
 			}
+			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
 		} catch (Exception e) {
-			handleError(e);
+			// TODO figure out how to handle the generic exception
 		}
 	}
 
@@ -61,11 +62,10 @@ public class ClientThread extends Thread {
 		ChatroomServer.setTerminateServer(new AtomicBoolean(true));
 	}
 
-	private void handleError(Exception e) {
-		ChatroomServer.handleError(e);
+	private void handleError(Error chat) {
 	}
 
-	private Chatroom createChatroomAndAddToServerRecords() throws Exception {
+	private Chatroom createChatroom() throws Exception {
 		Chatroom chatroom = new Chatroom(clientNode.getChatroomId());
 		return chatroom;
 	}
@@ -80,13 +80,11 @@ public class ClientThread extends Thread {
 
 		if (requestedChatroom != null) {
 			requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
-			// update server records
-			ChatroomServer.getActiveChatRooms().get(requestedChatroom).add(clientNode);
 		} else {
-			requestedChatroom = createChatroomAndAddToServerRecords();
+			requestedChatroom = createChatroom();
 			requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
 			// update server records
-			ChatroomServer.getActiveChatRooms().put(requestedChatroom, requestedChatroom.getSetOfConnectedClients());
+			ChatroomServer.getActiveChatRooms().add(requestedChatroom);
 		}
 		String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
 				this.serverPort, this.clientNode.getChatroomId(), this.clientNode.getJoinId());
@@ -128,7 +126,9 @@ public class ClientThread extends Thread {
 					chatroomAlreadyOnRecord.getChatroomId(), this.clientNode.getJoinId(), this.clientNode.getName(),
 					message);
 			chatroomAlreadyOnRecord.broadcastMessageInChatroom(responseToClient);
+			return;
 		}
+		handleError(Error.Chat);
 	}
 
 	private void disconnectFromServer() throws Exception {
@@ -136,7 +136,6 @@ public class ClientThread extends Thread {
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer
 				.retrieveRequestedChatroomIfExists(parsedRequestedChatroomToLeave);
 		chatroomAlreadyOnRecord.removeClientNodeAndInformOtherMembers(clientNode);
-		ChatroomServer.recordClientChangeWithServer(ClientRequest.DISCONNECT, clientNode);
 	}
 
 	private void writeResponseToClient(String response) throws IOException {
