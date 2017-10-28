@@ -129,7 +129,8 @@ public class ChatroomServer {
 			serverSocket.close();
 			System.out.println(String.format("%s>> Server shut down successfully. Goodbye.", getCurrentDateTime()));
 		} catch (Exception e) {
-			System.out.println(String.format("Error occurred when trying to shut down the server: %s", e));
+			System.out.println(String.format("%s>> Error occurred when trying to shut down the server: %s",
+					getCurrentDateTime(), e));
 		}
 	}
 
@@ -209,11 +210,14 @@ public class ChatroomServer {
 		terminateServer = value;
 	}
 
-	public static void outputErrorMessageToConsole(String errorResponse, ClientNode clientNode) {
+	public static void outputRequestErrorMessageToConsole(String errorResponse, ClientNode clientNode) {
 		String output = String.format("%s>> ERROR processing request (client %s): %s", getCurrentDateTime(),
 				clientNode.getName(), errorResponse);
 		System.out.println(output);
+	}
 
+	public static ServerSocket getServerSocket() {
+		return serverSocket;
 	}
 
 }

@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientThread extends Thread {
 
+	private static final int KILL_REQUEST_TIMEOUT_MILLIS = 10000;
+
 	private static final String SPLIT_PATTERN = ": ";
 
 	private static final String HELO_IDENTIFIER = "HELO ";
@@ -65,12 +67,27 @@ public class ClientThread extends Thread {
 
 	private void killService() {
 		ChatroomServer.setTerminateServer(new AtomicBoolean(true));
+		try {
+			// Assume after 10 seconds the request must have succeeded
+			sleep(KILL_REQUEST_TIMEOUT_MILLIS);
+		} catch (InterruptedException e) {
+			; // Do nothing
+		}
+		if (!ChatroomServer.getServerSocket().isClosed()) {
+			handleError(Error.KillService);
+		}
 	}
 
-	private void handleError(Error chat) throws IOException {
-		String errorResponse = String.format(ServerResponse.ERROR.getValue(), chat.getValue(), chat.getDescription());
-		this.clientNode.getConnection().getOutputStream().write(errorResponse.getBytes());
-		ChatroomServer.outputErrorMessageToConsole(errorResponse, this.clientNode);
+	private void handleError(Error errorMessage) {
+		String errorResponse = String.format(ServerResponse.ERROR.getValue(), errorMessage.getValue(),
+				errorMessage.getDescription());
+		try {
+			this.clientNode.getConnection().getOutputStream().write(errorResponse.getBytes());
+		} catch (IOException e) {
+			String temporaryErrorMessageHolder = errorResponse;
+			errorResponse = "Failed to communicate failure response to client: " + temporaryErrorMessageHolder;
+		}
+		ChatroomServer.outputRequestErrorMessageToConsole(errorResponse, this.clientNode);
 	}
 
 	private Chatroom createChatroom() throws Exception {
@@ -78,30 +95,34 @@ public class ClientThread extends Thread {
 		return chatroom;
 	}
 
-	private void joinChatroom() throws Exception {
-		String requestedChatroomToJoin = this.clientNode.getChatroomId();
+	private void joinChatroom() {
+		try {
+			String requestedChatroomToJoin = this.clientNode.getChatroomId();
 
-		Chatroom requestedChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToJoin);
-		if (this.clientNode.getJoinId() == null) {
-			this.clientNode.setJoinId(ChatroomServer.clientId.getAndIncrement());
-		}
+			Chatroom requestedChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToJoin);
+			if (this.clientNode.getJoinId() == null) {
+				this.clientNode.setJoinId(ChatroomServer.clientId.getAndIncrement());
+			}
 
-		if (requestedChatroom != null) {
-			requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
-		} else {
-			requestedChatroom = createChatroom();
-			requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
-			// update server records
-			ChatroomServer.getActiveChatRooms().add(requestedChatroom);
+			if (requestedChatroom != null) {
+				requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
+			} else {
+				requestedChatroom = createChatroom();
+				requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
+				// update server records
+				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
+			}
+			String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
+					this.serverPort, this.clientNode.getChatroomId(), this.clientNode.getJoinId());
+			writeResponseToClient(responseToClient);
+			requestedChatroom.broadcastMessageInChatroom(
+					String.format("A new client called %s has joined the chatroom!", clientNode.getName()));
+		} catch (Exception e) {
+			handleError(Error.JoinChatroom);
 		}
-		String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
-				this.serverPort, this.clientNode.getChatroomId(), this.clientNode.getJoinId());
-		writeResponseToClient(responseToClient);
-		requestedChatroom.broadcastMessageInChatroom(
-				String.format("A new client called %s has joined the chatroom!", clientNode.getName()));
 	}
 
-	private void leaveChatroom() throws Exception {
+	private void leaveChatroom() {
 		/*
 		 * LEAVE_CHATROOM: [ROOM_REF] JOIN_ID: [integer previously provided by
 		 * server on join] CLIENT_NAME: [string Handle to identifier client
@@ -109,18 +130,26 @@ public class ClientThread extends Thread {
 		 */
 		String requestedChatroomToLeave = this.clientNode.getChatroomId();
 		Chatroom existingChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToLeave);
-		if (existingChatroom != null) {
-			// NOTE: don't need to remove client from server records
-			existingChatroom.removeClientNodeAndInformOtherMembers(this.clientNode);
+		try {
+			if (existingChatroom != null) {
+				// NOTE: don't need to remove client from server records
+				existingChatroom.removeClientNodeAndInformOtherMembers(this.clientNode);
+			}
+			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), this.clientNode.getChatroomId(),
+					this.clientNode.getJoinId());
+			writeResponseToClient(responseToClient);
+		} catch (Exception e) {
+			handleError(Error.LeaveChatroom);
 		}
-		String responseToClient = String.format(ServerResponse.LEAVE.getValue(), this.clientNode.getChatroomId(),
-				this.clientNode.getJoinId());
-		writeResponseToClient(responseToClient);
 	}
 
-	private void sayHello() throws IOException {
-		String response = constructHelloResponse(this.receivedFromClient);
-		writeResponseToClient(response);
+	private void sayHello() {
+		try {
+			String response = constructHelloResponse(this.receivedFromClient);
+			writeResponseToClient(response);
+		} catch (Exception e) {
+			handleError(Error.Helo);
+		}
 	}
 
 	private String constructHelloResponse(List<String> receivedFromClient2) {

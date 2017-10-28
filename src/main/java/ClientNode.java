@@ -12,7 +12,7 @@ public class ClientNode implements Comparable<ClientNode> {
 
 	private Socket connection;
 	private String clientName;
-	private String chatroomId; // CHECK
+	private String chatroomId;
 	private Integer joinId;
 
 	public ClientNode(Socket connection, String clientName, String chatroomId, Integer joinId) {
@@ -42,7 +42,6 @@ public class ClientNode implements Comparable<ClientNode> {
 		this.joinId = joinId;
 	}
 
-	@Override
 	public int compareTo(ClientNode o) {
 		if (this.getJoinId() < o.getJoinId()) {
 			return -1;
