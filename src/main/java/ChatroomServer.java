@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -51,7 +53,13 @@ public class ChatroomServer {
 		serverPort = Integer.parseInt(portSpecified);
 		serverSocket = new ServerSocket(serverPort);
 		initialiseServerManagementVariables();
-		System.out.println(String.format("Server started on port %s...", portSpecified));
+		System.out.println(String.format("%s>> Server started on port %s...", getCurrentDateTime(), portSpecified));
+	}
+
+	private static String getCurrentDateTime() {
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yyy HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+		return format.format(now);
 	}
 
 	private static void initialiseServerManagementVariables() {
@@ -63,7 +71,8 @@ public class ChatroomServer {
 
 	private static synchronized void handleIncomingConnection() throws Exception {
 		Socket clientSocket = serverSocket.accept();
-		System.out.println(String.format("Connection received from %s...", clientSocket.getInetAddress().toString()));
+		System.out.println(String.format("%s>> Connection received from %s...", getCurrentDateTime(),
+				clientSocket.getInetAddress().toString()));
 
 		ClientRequest clientRequest = requestedAction(clientSocket);
 		ClientNode client = extractClientInfo(clientSocket, clientRequest);
@@ -112,13 +121,13 @@ public class ChatroomServer {
 
 	public static void shutdown() {
 		try {
-			System.out.println("Server shutting down...");
+			System.out.println(String.format("%s>> Server shutting down...", getCurrentDateTime()));
 			for (ClientNode node : getAllConnectedClients()) {
 				node.getConnection().close();
 			}
 			getActiveChatRooms().clear();
 			serverSocket.close();
-			System.out.println("Server shut down successfully. Goodbye.");
+			System.out.println(String.format("%s>> Server shut down successfully. Goodbye.", getCurrentDateTime()));
 		} catch (Exception e) {
 			System.out.println(String.format("Error occurred when trying to shut down the server: %s", e));
 		}
