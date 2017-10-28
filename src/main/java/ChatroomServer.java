@@ -110,14 +110,15 @@ public class ChatroomServer {
 		}
 	}
 
-	private static void shutdown() {
+	public static void shutdown() {
 		try {
-			System.out.println("Server shutdown...");
+			System.out.println("Server shutting down...");
 			for (ClientNode node : getAllConnectedClients()) {
 				node.getConnection().close();
 			}
 			getActiveChatRooms().clear();
 			serverSocket.close();
+			System.out.println("Server shut down successfully. Goodbye.");
 		} catch (Exception e) {
 			System.out.println(String.format("Error occurred when trying to shut down the server: %s", e));
 		}

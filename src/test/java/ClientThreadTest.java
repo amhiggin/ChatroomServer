@@ -72,6 +72,8 @@ public class ClientThreadTest {
 			Assert.fail("Fully executed thread for leave request after already leaving, but not disconnecting");
 		}
 
+		ChatroomServer.shutdown();
+
 	}
 
 	@Test
@@ -98,6 +100,8 @@ public class ClientThreadTest {
 
 		assertTrue("Client node no longer exists in server records",
 				!ChatroomServer.getAllConnectedClients().contains(node));
+
+		ChatroomServer.shutdown();
 	}
 
 }
