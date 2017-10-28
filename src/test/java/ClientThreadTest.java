@@ -107,4 +107,15 @@ public class ClientThreadTest {
 				!ChatroomServer.getAllConnectedClients().contains(node));
 	}
 
+	@Test
+	public void testHelloRequest() {
+		ClientNode node = new ClientNode(constants.mockHelloClientSocket, null, null, -1);
+		ClientThread thread = new ClientThread(node, ClientRequest.HELO, TestConstants.mockClientHeloRequest);
+		try {
+			thread.run();
+		} catch (Exception e) {
+			Assert.fail("Fully executed thread for hello request");
+		}
+	}
+
 }

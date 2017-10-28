@@ -35,6 +35,7 @@ public class TestConstants {
 
 	public Socket mockJoinClientSocket;
 	public Socket mockChatClientSocket;
+	public Socket mockHelloClientSocket;
 	public Socket mockLeaveClientSocket;
 	public Socket mockDisconnectClientSocket;
 	public Socket mockKillServiceClientSocket;
@@ -46,6 +47,7 @@ public class TestConstants {
 		this.mockLeaveClientSocket = mockClientSocket(
 				String.format(LEAVE_REQUEST, Integer.valueOf(1), Integer.valueOf(1), CLIENT_A));
 		this.mockDisconnectClientSocket = mockClientSocket(String.format(DISCONNECT_REQUEST, CLIENT_A));
+		this.mockHelloClientSocket = mockClientSocket(HELLO_HELLO);
 	}
 
 	public static Socket mockClientSocket(String request) {

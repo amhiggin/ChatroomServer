@@ -111,10 +111,14 @@ public class ClientThread extends Thread {
 	}
 
 	private void sayHello() throws IOException {
-		String response = String.format(ServerResponse.HELO.getValue(),
-				this.receivedFromClient.get(3).split(HELO_IDENTIFIER)[1], Constants.SERVER_IP, this.serverPort,
-				Constants.STUDENT_ID);
+		String response = constructHelloResponse(this.receivedFromClient);
 		writeResponseToClient(response);
+	}
+
+	private String constructHelloResponse(List<String> receivedFromClient2) {
+		return String.format(ServerResponse.HELO.getValue(),
+				this.receivedFromClient.get(0).split(HELO_IDENTIFIER)[1].replaceAll("\n", ""), Constants.SERVER_IP,
+				this.serverPort, Constants.STUDENT_ID);
 	}
 
 	private void chat() throws IOException {
