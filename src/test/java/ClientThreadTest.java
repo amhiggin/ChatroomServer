@@ -79,19 +79,14 @@ public class ClientThreadTest {
 			Assert.fail("Fully executed thread for join request");
 		}
 
-		// TODO @Amber correct the implementation such that the client can
-		// leave...
-		// Should also be able to close the socket connection
-		// // Now see if we can disconnect node
-		// node = new ClientNode(constants.mockDisconnectClientSocket,
-		// TestConstants.CLIENT_A, "1", 1);
-		// thread = new ClientThread(node, ClientRequest.DISCONNECT,
-		// TestConstants.mockClientDisconnectRequest);
-		// try {
-		// thread.run();
-		// } catch (Exception e) {
-		// Assert.fail("Fully executed thread for leave request");
-		// }
+		// First test if the join thread is handled correctly
+		node = new ClientNode(constants.mockDisconnectClientSocket, TestConstants.CLIENT_A, "1", 1);
+		thread = new ClientThread(node, ClientRequest.DISCONNECT, TestConstants.mockClientDisconnectRequest);
+		try {
+			thread.run();
+		} catch (Exception e) {
+			Assert.fail("Fully executed thread for disconnect request");
+		}
 	}
 
 }
