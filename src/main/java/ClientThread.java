@@ -23,7 +23,6 @@ public class ClientThread extends Thread {
 	private List<String> receivedFromClient;
 
 	public ClientThread(ClientNode client, ClientRequest requestType, List<String> receivedFromClient) {
-		super();
 		ChatroomServer.printMessageToConsole("spawning new client thread...");
 		this.clientNode = client;
 		this.requestType = requestType;
@@ -33,7 +32,7 @@ public class ClientThread extends Thread {
 
 	@Override
 	public void run() {
-		ChatroomServer.printMessageToConsole("Running thread");
+		ChatroomServer.printMessageToConsole("In run method");
 		try {
 			if (this.requestType == null) {
 				handleRequestProcessingError(Error.InvalidRequest);

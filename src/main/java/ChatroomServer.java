@@ -80,21 +80,24 @@ public class ChatroomServer {
 		List<String> message = getFullMessageFromClient(clientSocket);
 		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message);
 
+		ChatroomServer.printMessageToConsole("Running thread...");
 		newClientConnectionThread.run();
 	}
 
-	private static List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
+	private static synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		List<String> lines = new LinkedList<String>(); // create a new list
 		String line = inFromClient.readLine();
 		while (line != null) {
 			lines.add(line);
+			printMessageToConsole(String.format("Next line of input: %s", line));
 			line = inFromClient.readLine();
 		}
 		return lines;
 	}
 
-	public static ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType) throws IOException {
+	public static synchronized ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType)
+			throws IOException {
 		List<String> fullMessage = getFullMessageFromClient(clientSocket);
 		switch (requestType) {
 		case JOIN_CHATROOM:
