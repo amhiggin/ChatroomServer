@@ -75,16 +75,16 @@ public class ChatroomServer {
 		System.out.println(String.format("%s>> Connection received from %s...", getCurrentDateTime(),
 				clientSocket.getInetAddress().toString()));
 
-		ClientRequest clientRequest = requestedAction(clientSocket);
-		ClientNode client = extractClientInfo(clientSocket, clientRequest);
 		List<String> message = getFullMessageFromClient(clientSocket);
+		ClientRequest clientRequest = requestedAction(message);
+		ClientNode client = extractClientInfo(clientSocket, clientRequest, message);
 		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message);
 
 		ChatroomServer.printMessageToConsole("Running thread...");
 		newClientConnectionThread.run();
 	}
 
-	private static synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
+	public static synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
 		printMessageToConsole("retrieving message from the client (getFullMessageFromClient)");
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		List<String> lines = new LinkedList<String>(); // create a new list
@@ -97,24 +97,23 @@ public class ChatroomServer {
 		return lines;
 	}
 
-	public static synchronized ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType)
-			throws IOException {
-		List<String> fullMessage = getFullMessageFromClient(clientSocket);
+	public static synchronized ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType,
+			List<String> message) throws IOException {
 		printMessageToConsole("in extractClientInfo method");
 		switch (requestType) {
 		case JOIN_CHATROOM:
-			return new ClientNode(clientSocket, fullMessage.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					fullMessage.get(0).split(JOIN_CHATROOM_IDENTIFIER, 0)[1], clientId.getAndIncrement());
+			return new ClientNode(clientSocket, message.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
+					message.get(0).split(JOIN_CHATROOM_IDENTIFIER, 0)[1], clientId.getAndIncrement());
 		case CHAT:
-			return new ClientNode(clientSocket, fullMessage.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					fullMessage.get(0).split(CHAT_IDENTIFIER, 0)[1],
-					Integer.parseInt(fullMessage.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]));
+			return new ClientNode(clientSocket, message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
+					message.get(0).split(CHAT_IDENTIFIER, 0)[1],
+					Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]));
 		case LEAVE_CHATROOM:
-			return new ClientNode(clientSocket, fullMessage.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					fullMessage.get(0).split(LEAVE_CHATROOM_IDENTIFIER, 0)[1],
-					Integer.parseInt(fullMessage.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]));
+			return new ClientNode(clientSocket, message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
+					message.get(0).split(LEAVE_CHATROOM_IDENTIFIER, 0)[1],
+					Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]));
 		case DISCONNECT:
-			return new ClientNode(clientSocket, fullMessage.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null,
+			return new ClientNode(clientSocket, message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null,
 					UNDEFINED_JOIN_ID);
 		case HELO:
 			printMessageToConsole("Helo client node created");
@@ -157,8 +156,8 @@ public class ChatroomServer {
 		// in that chatroom (for repeated LEAVE requests)
 	}
 
-	public static ClientRequest requestedAction(Socket clientSocket) throws IOException {
-		String requestType = parseClientRequestType(clientSocket);
+	public static ClientRequest requestedAction(List<String> message) throws IOException {
+		String requestType = parseClientRequestType(message);
 		try {
 			ClientRequest clientRequest = ClientRequest.valueOf(requestType);
 			printMessageToConsole("The parsed request type matched with " + clientRequest.getValue());
@@ -169,16 +168,14 @@ public class ChatroomServer {
 		}
 	}
 
-	private static String parseClientRequestType(Socket clientSocket) throws IOException {
-		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		String clientSentence = inFromClient.readLine();
-		String[] requestType = clientSentence.split(SPLIT_CRITERIA, 0);
+	private static String parseClientRequestType(List<String> message) throws IOException {
+		String[] requestType = message.get(0).split(SPLIT_CRITERIA, 0);
 		if (requestType[0].contains("HELO")) {
 			String temp = requestType[0];
-			requestType = temp.split(" ", 0);
+			String[] splitString = temp.split(" ", 0);
+			requestType[0] = splitString[0];
 		}
-		printMessageToConsole(
-				String.format("Parsed request '%s' from %s", requestType[0], clientSocket.getInetAddress().toString()));
+		printMessageToConsole(String.format("Parsed request type '%s", requestType[0]));
 
 		return requestType[0];
 	}
