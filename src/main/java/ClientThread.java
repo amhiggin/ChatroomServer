@@ -64,7 +64,7 @@ public class ClientThread extends Thread {
 			}
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
 		} catch (Exception e) {
-			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
+			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e.getStackTrace()));
 		}
 	}
 
