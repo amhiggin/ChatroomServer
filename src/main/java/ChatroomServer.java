@@ -95,10 +95,12 @@ public class ChatroomServer {
 			lines.add(line);
 			printMessageToConsole(String.format("Current line of input: %s", line));
 			try {
-				if (inFromClient.readLine().isEmpty()) {
-					break;
+				printMessageToConsole("In try loop");
+				line = inFromClient.readLine();
+				if (line.isEmpty()) {
+					printMessageToConsole("That line was empty");
+					return lines;
 				} else {
-					line = inFromClient.readLine();
 					printMessageToConsole(String.format("Read another line: %s", line));
 				}
 			} catch (Exception e) {
