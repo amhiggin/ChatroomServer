@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 
 public class TestConstants {
 
-	public static final String HELLO_HELLO = "Hello hello\n\n";
+	public static final String HELLO_HELLO = "Hello hello";
 	public static final String CLIENT_A = "client a";
 	// NOTE: should use String.format(msg, args[]) to specify %s in constants
 	public static final String JOIN_REQUEST = "JOIN_CHATROOM: %s\n" + "CLIENT_IP: 0.0.0.0\n" + "PORT: 0\n"
@@ -31,7 +31,7 @@ public class TestConstants {
 	public static final List<String> mockClientDisconnectRequest = Arrays.asList("DISCONNECT: 0", "PORT: 0",
 			"CLIENT_NAME: client a");
 	public static final List<String> mockClientKillServiceRequest = Arrays.asList("KILL SERVICE\n");
-	public static final List<String> mockClientHeloRequest = Arrays.asList("HELO Hello hello\n\n");
+	public static final List<String> mockClientHeloRequest = Arrays.asList("HELO Hello hello");
 	public static final String TEST_PORT = "23457";
 
 	public Socket mockJoinClientSocket;

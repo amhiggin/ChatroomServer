@@ -91,20 +91,11 @@ public class ChatroomServer {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		List<String> lines = new LinkedList<String>(); // create a new list
 		String line = inFromClient.readLine();
-		while (!line.equals("")) {
+		while (line != null) {
 			lines.add(line);
-			printMessageToConsole(String.format("Current line of input: %s", line));
-			try {
-				printMessageToConsole("In try loop");
-				line = inFromClient.readLine();
-				if (line.isEmpty()) {
-					printMessageToConsole("That line was empty");
-					return lines;
-				} else {
-					printMessageToConsole(String.format("Read another line: %s", line));
-				}
-			} catch (Exception e) {
-				printMessageToConsole("Caught the IOException when trying to read another line");
+			printMessageToConsole(String.format("Read another line: %s", line));
+			line = inFromClient.readLine();
+			if (line.isEmpty()) {
 				return lines;
 			}
 		}
