@@ -85,6 +85,7 @@ public class ChatroomServer {
 	}
 
 	private static synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
+		printMessageToConsole("retrieving message from the client (getFullMessageFromClient)");
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		List<String> lines = new LinkedList<String>(); // create a new list
 		String line = inFromClient.readLine();
@@ -99,6 +100,7 @@ public class ChatroomServer {
 	public static synchronized ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType)
 			throws IOException {
 		List<String> fullMessage = getFullMessageFromClient(clientSocket);
+		printMessageToConsole("in extractClientInfo method");
 		switch (requestType) {
 		case JOIN_CHATROOM:
 			return new ClientNode(clientSocket, fullMessage.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
@@ -115,10 +117,12 @@ public class ChatroomServer {
 			return new ClientNode(clientSocket, fullMessage.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null,
 					UNDEFINED_JOIN_ID);
 		case HELO:
+			printMessageToConsole("Helo client node created");
 			return new ClientNode(clientSocket, null, null, UNDEFINED_JOIN_ID);
 		case KILL_SERVICE:
 			return new ClientNode(null, null, null, UNDEFINED_JOIN_ID);
 		default:
+			printMessageToConsole("Null clientnode created");
 			return null;
 		}
 	}
@@ -156,7 +160,9 @@ public class ChatroomServer {
 	public static ClientRequest requestedAction(Socket clientSocket) throws IOException {
 		String requestType = parseClientRequestType(clientSocket);
 		try {
-			return ClientRequest.valueOf(requestType);
+			ClientRequest clientRequest = ClientRequest.valueOf(requestType);
+			printMessageToConsole("The parsed request type matched with " + clientRequest.getValue());
+			return clientRequest;
 		} catch (Exception e) {
 			outputServiceErrorMessageToConsole("Error occurred trying to fetch the request type");
 			return null;
