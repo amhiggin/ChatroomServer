@@ -92,14 +92,15 @@ public class ChatroomServer {
 		List<String> lines = new LinkedList<String>(); // create a new list
 		String line = inFromClient.readLine();
 		while (!line.equals("")) {
-			if (line.isEmpty()) {
-				break;
-			}
 			lines.add(line);
 			printMessageToConsole(String.format("Current line of input: %s", line));
 			try {
-				line = inFromClient.readLine();
-				printMessageToConsole(String.format("Read another line: %s", line));
+				if (inFromClient.readLine().isEmpty()) {
+					break;
+				} else {
+					line = inFromClient.readLine();
+					printMessageToConsole(String.format("Read another line: %s", line));
+				}
 			} catch (Exception e) {
 				printMessageToConsole("Caught the IOException when trying to read another line");
 				return lines;
