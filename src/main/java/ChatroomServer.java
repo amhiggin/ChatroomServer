@@ -76,8 +76,6 @@ public class ChatroomServer {
 				clientSocket.getInetAddress().toString()));
 
 		ClientRequest clientRequest = requestedAction(clientSocket);
-		System.out.println(String.format("%s>> Client %s requested %s", getCurrentDateTime(),
-				clientSocket.getInetAddress().toString(), clientRequest.getValue()));
 		ClientNode client = extractClientInfo(clientSocket, clientRequest);
 		List<String> message = getFullMessageFromClient(clientSocket);
 		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message);
