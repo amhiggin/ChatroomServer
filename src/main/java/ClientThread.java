@@ -156,6 +156,7 @@ public class ClientThread extends Thread {
 	}
 
 	private void sayHello() {
+		ChatroomServer.printMessageToConsole("Going to say hello!");
 		try {
 			String response = constructHelloResponse(this.receivedFromClient);
 			writeResponseToClient(response);
