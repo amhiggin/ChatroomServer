@@ -217,6 +217,11 @@ public class ChatroomServer {
 		System.out.println(output);
 	}
 
+	public static void outputServiceErrorMessageToConsole(String errorMessage) {
+		String output = String.format("%s>> Service error: %s", getCurrentDateTime(), errorMessage);
+		System.out.println(output);
+	}
+
 	public static ServerSocket getServerSocket() {
 		return serverSocket;
 	}
