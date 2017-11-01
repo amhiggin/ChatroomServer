@@ -85,13 +85,14 @@ public class ChatroomServer {
 	}
 
 	public static synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
-		printMessageToConsole("retrieving message from the client (getFullMessageFromClient)");
+		printMessageToConsole("retrieving message from the client (getFullMessageFromClient)"); // TODO
+																								// refine
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		List<String> lines = new LinkedList<String>(); // create a new list
 		String line = inFromClient.readLine();
-		printMessageToConsole(String.format("First line of input: %s", line));
 		while (line != null) {
 			lines.add(line);
+			printMessageToConsole(String.format("Current line of input: %s", line));
 			line = inFromClient.readLine();
 		}
 		return lines;
@@ -156,7 +157,8 @@ public class ChatroomServer {
 		// in that chatroom (for repeated LEAVE requests)
 	}
 
-	public static ClientRequest requestedAction(List<String> message) throws IOException {
+	public static synchronized ClientRequest requestedAction(List<String> message) throws IOException {
+		printMessageToConsole("In requestedAction method");
 		String requestType = parseClientRequestType(message);
 		try {
 			ClientRequest clientRequest = ClientRequest.valueOf(requestType);
@@ -169,6 +171,7 @@ public class ChatroomServer {
 	}
 
 	private static String parseClientRequestType(List<String> message) throws IOException {
+		printMessageToConsole("In parseClientRequestType method");
 		String[] requestType = message.get(0).split(SPLIT_CRITERIA, 0);
 		// TODO refine message
 		printMessageToConsole(String.format("Parsed request type (first time) '%s", requestType[0]));
