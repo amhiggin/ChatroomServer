@@ -72,6 +72,7 @@ public class ChatroomServer {
 
 	private static synchronized void handleIncomingConnection() throws Exception {
 		Socket clientSocket = serverSocket.accept();
+		clientSocket.setKeepAlive(true);
 		System.out.println(String.format("%s>> Connection received from %s...", getCurrentDateTime(),
 				clientSocket.getInetAddress().toString()));
 
@@ -95,6 +96,7 @@ public class ChatroomServer {
 			printMessageToConsole(String.format("Current line of input: %s", line));
 			line = inFromClient.readLine();
 		}
+		printMessageToConsole("Thats all the lines!");
 		return lines;
 	}
 
