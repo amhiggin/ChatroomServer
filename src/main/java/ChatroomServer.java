@@ -94,7 +94,13 @@ public class ChatroomServer {
 		while (line != null) {
 			lines.add(line);
 			printMessageToConsole(String.format("Current line of input: %s", line));
-			line = inFromClient.readLine();
+			try {
+				line = inFromClient.readLine();
+				printMessageToConsole(String.format("Read another line: %s", line));
+			} catch (Exception e) {
+				printMessageToConsole("Caught the IOException when trying to read another line");
+				return lines;
+			}
 		}
 		printMessageToConsole("Thats all the lines!");
 		return lines;
