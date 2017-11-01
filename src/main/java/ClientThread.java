@@ -60,11 +60,11 @@ public class ClientThread extends Thread {
 				break;
 			default:
 				handleRequestProcessingError(Error.InvalidRequest);
-				throw new RequestNotFoundException();
 			}
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
 		} catch (Exception e) {
-			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e.getStackTrace()));
+			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
+			e.printStackTrace(); // TODO @Amber remove later
 		}
 	}
 
