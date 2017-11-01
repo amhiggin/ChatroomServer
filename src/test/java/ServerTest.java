@@ -75,6 +75,12 @@ public class ServerTest {
 		assertTrue("Client node info was parsed correctly from disconnect request",
 				clientNodesMatch(ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.DISCONNECT,
 						TestConstants.mockClientDisconnectRequest), mockClientNode));
+
+		mockClientSocket = constants.mockHelloClientSocket;
+		mockClientNode = new ClientNode(mockClientSocket, null, null, -1);
+		assertTrue("client node info was parsed correctly from helo request",
+				clientNodesMatch(ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.HELO,
+						TestConstants.mockClientHeloRequest), mockClientNode));
 	}
 
 	@Test
@@ -91,7 +97,8 @@ public class ServerTest {
 		if (extractClientInfo.getConnection().getInputStream() != mockClientNode.getConnection().getInputStream()) {
 			return false;
 		}
-		if (!(extractClientInfo.getName().equals(mockClientNode.getName()))) {
+		if (!(extractClientInfo.getName().equals(mockClientNode.getName()))
+				&& (!(extractClientInfo.getName() == null) && (!(mockClientNode.getName() == null)))) {
 			return false;
 		}
 		if ((!(extractClientInfo.getChatroomId() == null)) && (!(mockClientNode.getChatroomId() == null))) {
