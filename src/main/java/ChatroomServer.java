@@ -40,11 +40,11 @@ public class ChatroomServer {
 				try {
 					handleIncomingConnection();
 				} catch (Exception e) {
-					System.out.println(String.format("%s>> Error handling connection: %s", getCurrentDateTime(), e));
+					outputServiceErrorMessageToConsole(e.getMessage());
 				}
 			}
 		} catch (Exception e) {
-			System.out.println(String.format("%s>> Error while initialising server: %s", getCurrentDateTime(), e));
+			outputServiceErrorMessageToConsole(e.getMessage());
 		} finally {
 			shutdown();
 		}
@@ -76,6 +76,8 @@ public class ChatroomServer {
 				clientSocket.getInetAddress().toString()));
 
 		ClientRequest clientRequest = requestedAction(clientSocket);
+		System.out.println(String.format("%s>> Client %s requested %s", getCurrentDateTime(),
+				clientSocket.getInetAddress().toString(), clientRequest.getValue()));
 		ClientNode client = extractClientInfo(clientSocket, clientRequest);
 		List<String> message = getFullMessageFromClient(clientSocket);
 		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message);
@@ -224,6 +226,11 @@ public class ChatroomServer {
 
 	public static ServerSocket getServerSocket() {
 		return serverSocket;
+	}
+
+	public static void printMessageToConsole(String message) {
+		System.out.println(String.format("%s>> %s", getCurrentDateTime(), message));
+
 	}
 
 }
