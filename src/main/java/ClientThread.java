@@ -198,8 +198,7 @@ public class ClientThread extends Thread {
 	}
 
 	private void writeResponseToClient(String response) throws IOException {
+		ChatroomServer.printMessageToConsole(String.format("Writing response to client: %s", response));
 		this.clientNode.getConnection().getOutputStream().write(response.getBytes());
-		ChatroomServer.printMessageToConsole(String.format("Wrote %s response to client %s",
-				this.requestType.getValue(), this.clientNode.getName()));
 	}
 }
