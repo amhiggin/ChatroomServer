@@ -168,7 +168,7 @@ public class ClientThread extends Thread {
 		String helloResponse = String.format(ServerResponse.HELO.getValue(),
 				this.receivedFromClient.get(0).split(HELO_IDENTIFIER)[1].replaceAll("\n", ""),
 				ChatroomServer.getServerSocket().getInetAddress(), this.serverPort, Constants.STUDENT_ID);
-		ChatroomServer.printMessageToConsole(String.format("Sent %s to %s", helloResponse, this.clientNode.getName()));
+		ChatroomServer.printMessageToConsole(String.format("Sent %s ", helloResponse));
 		return helloResponse;
 	}
 
