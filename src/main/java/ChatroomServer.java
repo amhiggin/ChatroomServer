@@ -158,6 +158,7 @@ public class ChatroomServer {
 		try {
 			return ClientRequest.valueOf(requestType);
 		} catch (Exception e) {
+			outputServiceErrorMessageToConsole("Error occurred trying to fetch the request type");
 			return null;
 		}
 	}
