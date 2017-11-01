@@ -23,8 +23,8 @@ public class ClientThread extends Thread {
 	private List<String> receivedFromClient;
 
 	public ClientThread(ClientNode client, ClientRequest requestType, List<String> receivedFromClient) {
-		ChatroomServer.printMessageToConsole("spawning new client thread...");
 		super();
+		ChatroomServer.printMessageToConsole("spawning new client thread...");
 		this.clientNode = client;
 		this.requestType = requestType;
 		this.receivedFromClient = receivedFromClient;
