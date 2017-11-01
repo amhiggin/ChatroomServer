@@ -11,6 +11,6 @@
 echo "Running compilation on Chatroom Server project"
 
 # Compile with dependencies
-javac -cp lib\* src\main\java\*.java
+javac -cp lib/* src/main/java/*.java
 
 echo "Done."
