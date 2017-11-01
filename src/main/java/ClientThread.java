@@ -23,14 +23,17 @@ public class ClientThread extends Thread {
 	private List<String> receivedFromClient;
 
 	public ClientThread(ClientNode client, ClientRequest requestType, List<String> receivedFromClient) {
+		ChatroomServer.printMessageToConsole("spawning new client thread...");
 		super();
 		this.clientNode = client;
 		this.requestType = requestType;
 		this.receivedFromClient = receivedFromClient;
+		ChatroomServer.printMessageToConsole("Done spawning new thread");
 	}
 
 	@Override
 	public void run() {
+		ChatroomServer.printMessageToConsole("Running thread");
 		try {
 			if (this.requestType == null) {
 				handleRequestProcessingError(Error.InvalidRequest);
@@ -92,7 +95,7 @@ public class ClientThread extends Thread {
 			String temporaryErrorMessageHolder = errorResponse;
 			errorResponse = "Failed to communicate failure response to client: " + temporaryErrorMessageHolder;
 		}
-		ChatroomServer.outputRequestErrorMessageToConsole(errorResponse, this.clientNode);
+		ChatroomServer.printMessageToConsole(errorResponse);
 	}
 
 	private Chatroom createChatroom() throws Exception {
