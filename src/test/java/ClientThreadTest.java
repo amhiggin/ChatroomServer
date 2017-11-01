@@ -30,9 +30,24 @@ public class ClientThreadTest {
 
 	@Test
 	public void testNullClientNodeHandledCorrectly() {
-		ClientNode node = null;
-		ClientThread thread = new ClientThread(node, null, TestConstants.mockClientKillServiceRequest);
-		thread.run();
+		try {
+			ClientNode node = null;
+			ClientThread thread = new ClientThread(node, ClientRequest.CHAT, TestConstants.mockClientChatRequest);
+			thread.run();
+		} catch (Exception e) {
+			Assert.fail("Null client node handled as expected");
+		}
+	}
+
+	@Test
+	public void testNullRequestHandledCorrectly() {
+		try {
+			ClientNode node = new ClientNode(constants.mockJoinClientSocket, TestConstants.CLIENT_A, "1", 1);
+			ClientThread thread = new ClientThread(node, null, TestConstants.mockClientJoinRequest);
+			thread.run();
+		} catch (Exception e) {
+			Assert.fail("Null request handled as expected");
+		}
 	}
 
 	@Test

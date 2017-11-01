@@ -36,6 +36,9 @@ public class ClientThread extends Thread {
 				handleRequestProcessingError(Error.InvalidRequest);
 				return;
 			}
+			if (this.clientNode == null) {
+				throw new ClientNodeUndefinedException("Null client node");
+			}
 			switch (this.requestType) {
 			case JOIN_CHATROOM:
 				joinChatroom();
