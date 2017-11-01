@@ -1,8 +1,8 @@
 # ChatroomServer
 ## Amber Higgins, MAI Computer Engineering 2017/2018, 13327954
 * For Scalable Computing module
-* <b> To be updated with details - 20/10/17 </b>
 
+# Dependencies
 
 ## Runtime Dependencies
 * JRE 1.8.0_101
@@ -10,3 +10,15 @@
 ## Test Dependencies ##
 * Mockito v1.9.5
 * JUnit v4.12
+
+# Deployment Instructions
+1. Clone this repository using <i><b> git clone https://www.github.com/amhiggin/ChatroomServer </b></i>.
+2. Run the <i>compile.sh</i> script:
+    * Assign execute permissions using '<i><b>chmod 755 compile.sh</i></b>'. (don't forget <i>sudo</i> if necessary).
+    * Run using '<i>./compile.sh</i>'. 
+3. Run the <i>start.sh</i> script:
+    * As before, assign execute permissions using '<b><i>chmod 755 start.sh</b></i>'.
+    * Run the script, specifying the port number you want the server to be accessible at. This looks something like
+     '<i><b>./start.sh <port_number></i></b>'.
+    * You should see a message similar to the following:
+  <b><i> 01/11/2017 15:31:52>> Server started on port 1234...</i></b>
