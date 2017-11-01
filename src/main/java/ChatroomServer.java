@@ -89,9 +89,9 @@ public class ChatroomServer {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		List<String> lines = new LinkedList<String>(); // create a new list
 		String line = inFromClient.readLine();
+		printMessageToConsole(String.format("First line of input: %s", line));
 		while (line != null) {
 			lines.add(line);
-			printMessageToConsole(String.format("Next line of input: %s", line));
 			line = inFromClient.readLine();
 		}
 		return lines;
