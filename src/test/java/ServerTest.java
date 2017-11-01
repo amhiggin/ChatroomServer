@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -30,12 +31,13 @@ public class ServerTest {
 	@Test
 	public void testIsValidRequest() throws Exception {
 		String request = TestConstants.JOIN_REQUEST;
-		assertTrue("JOIN_CHATROOM is a valid input",
-				ChatroomServer.requestedAction(TestConstants.mockClientSocket(request)) != null);
+		List<String> message = ChatroomServer.getFullMessageFromClient(TestConstants.mockClientSocket(request));
+
+		assertTrue("JOIN_CHATROOM is a valid input", ChatroomServer.requestedAction(message) != null);
 
 		request = "PARTY";
-		assertTrue("PARTY is not a valid input",
-				ChatroomServer.requestedAction(TestConstants.mockClientSocket(request)) == null);
+		message = ChatroomServer.getFullMessageFromClient(TestConstants.mockClientSocket(request));
+		assertTrue("PARTY is not a valid input", ChatroomServer.requestedAction(message) == null);
 	}
 
 	@Test
@@ -44,26 +46,30 @@ public class ServerTest {
 		// JOIN request
 		Socket mockClientSocket = constants.mockJoinClientSocket;
 		ClientNode mockClientNode = new ClientNode(mockClientSocket, "client a", "1", 0);
-		assertTrue("Client node info was parsed correctly from join request", clientNodesMatch(
-				ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.JOIN_CHATROOM), mockClientNode));
+		assertTrue("Client node info was parsed correctly from join request",
+				clientNodesMatch(ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.JOIN_CHATROOM,
+						TestConstants.mockClientJoinRequest), mockClientNode));
 
 		// CHAT request: doesn't test that the message is constructed correctly
 		mockClientSocket = constants.mockChatClientSocket;
 		mockClientNode = new ClientNode(mockClientSocket, "client a", "1", ChatroomServer.clientId.get());
-		assertTrue("Client node info was parsed correctly from chat request", clientNodesMatch(
-				ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.CHAT), mockClientNode));
+		assertTrue("Client node info was parsed correctly from chat request",
+				clientNodesMatch(ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.CHAT,
+						TestConstants.mockClientChatRequest), mockClientNode));
 
 		// LEAVE request
 		mockClientSocket = constants.mockLeaveClientSocket;
 		mockClientNode = new ClientNode(mockClientSocket, "client a", "1", ChatroomServer.clientId.get());
-		assertTrue("Client node info was parsed correctly from leave request", clientNodesMatch(
-				ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.LEAVE_CHATROOM), mockClientNode));
+		assertTrue("Client node info was parsed correctly from leave request",
+				clientNodesMatch(ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.LEAVE_CHATROOM,
+						TestConstants.mockClientLeaveRequest), mockClientNode));
 
 		// DISCONNECT request
 		mockClientSocket = constants.mockDisconnectClientSocket;
 		mockClientNode = new ClientNode(mockClientSocket, "client a", null, -1);
-		assertTrue("Client node info was parsed correctly from disconnect request", clientNodesMatch(
-				ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.DISCONNECT), mockClientNode));
+		assertTrue("Client node info was parsed correctly from disconnect request",
+				clientNodesMatch(ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.DISCONNECT,
+						TestConstants.mockClientDisconnectRequest), mockClientNode));
 	}
 
 	@Test
