@@ -165,8 +165,13 @@ public class ChatroomServer {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		String clientSentence = inFromClient.readLine();
 		String[] requestType = clientSentence.split(SPLIT_CRITERIA, 0);
+		if (requestType[0].contains("HELO")) {
+			String temp = requestType[0];
+			requestType = temp.split(" ", 0);
+		}
 		printMessageToConsole(
 				String.format("Parsed request '%s' from %s", requestType[0], clientSocket.getInetAddress().toString()));
+
 		return requestType[0];
 	}
 
