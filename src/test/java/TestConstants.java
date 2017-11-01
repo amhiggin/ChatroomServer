@@ -20,6 +20,7 @@ public class TestConstants {
 			+ "ROOM_REF: %s\n" + "JOIN_ID: %s";
 	public static final String CHAT_REQUEST = "CHAT: %s\n" + "JOIN_ID: %s\n" + "CLIENT_NAME: %s\n" + "MESSAGE: %s";
 	public static final String DISCONNECT_REQUEST = "DISCONNECT: 0\n" + "PORT: 0\n" + "CLIENT_NAME: %s";
+	public static final String HELO_REQUEST = "HELO %s";
 
 	public static final List<String> mockClientJoinRequest = Arrays.asList("JOIN_CHATROOM: 1", "CLIENT_IP: 0.0.0.0",
 			"PORT: 0", "CLIENT_NAME: client a");

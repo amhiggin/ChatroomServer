@@ -38,6 +38,11 @@ public class ServerTest {
 		request = "PARTY";
 		message = ChatroomServer.getFullMessageFromClient(TestConstants.mockClientSocket(request));
 		assertTrue("PARTY is not a valid input", ChatroomServer.requestedAction(message) == null);
+
+		request = TestConstants.HELO_REQUEST;
+		message = ChatroomServer.getFullMessageFromClient(TestConstants.mockClientSocket(request));
+		assertTrue("HELO is a valid input", ChatroomServer.requestedAction(message) != null);
+
 	}
 
 	@Test

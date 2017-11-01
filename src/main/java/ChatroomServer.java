@@ -170,6 +170,8 @@ public class ChatroomServer {
 
 	private static String parseClientRequestType(List<String> message) throws IOException {
 		String[] requestType = message.get(0).split(SPLIT_CRITERIA, 0);
+		// TODO refine message
+		printMessageToConsole(String.format("Parsed request type (first time) '%s", requestType[0]));
 		if (requestType[0].contains("HELO")) {
 			String temp = requestType[0];
 			String[] splitString = temp.split(" ", 0);
