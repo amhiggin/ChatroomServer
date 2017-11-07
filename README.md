@@ -5,9 +5,12 @@
 # Dependencies
 
 ## Runtime Dependencies
-* JRE 1.8.0_101
+<i><b> Included in the /libs dir</i></b>
+* JRE 1.7.0_151
+* Joda Time 2.9.9
 
 ## Test Dependencies ##
+<i><b> Included in the /testlibs dir</i></b>
 * Mockito v1.9.5
 * JUnit v4.12
 
