@@ -71,6 +71,7 @@ public class ChatroomServer {
 		activeChatRooms = new ConcurrentSkipListSet<Chatroom>();
 		terminateServer = new AtomicBoolean(Boolean.FALSE);
 		nextClientId = new AtomicInteger(0);
+		nextChatroomId = new AtomicInteger(0);
 	}
 
 	private static synchronized void handleIncomingConnection() throws Exception {
