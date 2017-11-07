@@ -24,7 +24,8 @@ public class ChatroomServer {
 	private static final String JOIN_ID_IDENTIFIER = "JOIN_ID: ";
 	private static final String CLIENT_NAME_IDENTIFIER = "CLIENT_NAME: ";
 
-	public static AtomicInteger clientId;
+	public static AtomicInteger nextClientId;
+	public static AtomicInteger nextChatroomId;
 	private static ServerSocket serverSocket;
 	private static AtomicBoolean terminateServer;
 	private static ConcurrentSkipListSet<Chatroom> activeChatRooms;
@@ -69,7 +70,7 @@ public class ChatroomServer {
 		connectedClients = new ConcurrentSkipListSet<ClientNode>();
 		activeChatRooms = new ConcurrentSkipListSet<Chatroom>();
 		terminateServer = new AtomicBoolean(Boolean.FALSE);
-		clientId = new AtomicInteger(0);
+		nextClientId = new AtomicInteger(0);
 	}
 
 	private static synchronized void handleIncomingConnection() throws Exception {
@@ -88,7 +89,6 @@ public class ChatroomServer {
 	}
 
 	public static synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
-		printMessageToConsole("retrieving message from the client (getFullMessageFromClient)"); // TODO
 		BufferedInputStream inputStream = new BufferedInputStream(clientSocket.getInputStream());
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		int result = inputStream.read();
@@ -98,10 +98,8 @@ public class ChatroomServer {
 		}
 		// Assuming UTF-8 encoding
 		String inFromClient = outputStream.toString("UTF-8");
-		printMessageToConsole("inFromClient is: " + inFromClient);
 		List<String> lines = getRequestStringAsArrayList(inFromClient);
 
-		printMessageToConsole("Thats all the lines!");
 		return lines;
 	}
 
@@ -120,7 +118,7 @@ public class ChatroomServer {
 		switch (requestType) {
 		case JOIN_CHATROOM:
 			return new ClientNode(clientSocket, message.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					message.get(0).split(JOIN_CHATROOM_IDENTIFIER, 0)[1], clientId.getAndIncrement());
+					message.get(0).split(JOIN_CHATROOM_IDENTIFIER, 0)[1], nextClientId.getAndIncrement());
 		case CHAT:
 			return new ClientNode(clientSocket, message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
 					message.get(0).split(CHAT_IDENTIFIER, 0)[1],

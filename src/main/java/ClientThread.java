@@ -99,7 +99,7 @@ public class ClientThread extends Thread {
 	}
 
 	private Chatroom createChatroom() throws Exception {
-		Chatroom chatroom = new Chatroom(clientNode.getChatroomId());
+		Chatroom chatroom = new Chatroom(clientNode.getChatroomId(), ChatroomServer.nextChatroomId);
 		ChatroomServer.printMessageToConsole(String.format("Created new chatroom %s", chatroom.getChatroomId()));
 		return chatroom;
 	}
@@ -112,7 +112,7 @@ public class ClientThread extends Thread {
 
 			Chatroom requestedChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToJoin);
 			if (this.clientNode.getJoinId() == null) {
-				this.clientNode.setJoinId(ChatroomServer.clientId.getAndIncrement());
+				this.clientNode.setJoinId(ChatroomServer.nextClientId.getAndIncrement());
 			}
 
 			if (requestedChatroom != null) {
@@ -126,7 +126,7 @@ public class ClientThread extends Thread {
 						this.clientNode.getName(), requestedChatroom.getChatroomId()));
 			}
 			String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
-					ChatroomServer.serverPort, this.clientNode.getChatroomId(), this.clientNode.getJoinId());
+					ChatroomServer.serverPort, requestedChatroom.getChatroomRef(), this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
 			requestedChatroom.broadcastMessageInChatroom(
 					String.format("A new client called %s has joined the chatroom!", clientNode.getName()));

@@ -3,15 +3,18 @@ package main.java;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Chatroom {
 
 	private ConcurrentSkipListSet<ClientNode> listOfConnectedClients;
 	private String chatroomId;
+	private Integer chatroomRef;
 
-	public Chatroom(String id) throws IOException {
+	public Chatroom(String id, AtomicInteger chatroomRef) throws IOException {
 		this.chatroomId = id;
 		this.listOfConnectedClients = new ConcurrentSkipListSet<ClientNode>();
+		this.chatroomRef = chatroomRef.get();
 	}
 
 	public void removeClientNodeAndInformOtherMembers(ClientNode node) throws Exception {
@@ -55,5 +58,9 @@ public class Chatroom {
 
 	public String getChatroomId() {
 		return this.chatroomId;
+	}
+
+	public Integer getChatroomRef() {
+		return this.chatroomRef;
 	}
 }

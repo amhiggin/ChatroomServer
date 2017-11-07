@@ -57,14 +57,14 @@ public class ServerTest {
 
 		// CHAT request: doesn't test that the message is constructed correctly
 		mockClientSocket = constants.mockChatClientSocket;
-		mockClientNode = new ClientNode(mockClientSocket, "client a", "1", ChatroomServer.clientId.get());
+		mockClientNode = new ClientNode(mockClientSocket, "client a", "1", ChatroomServer.nextClientId.get());
 		assertTrue("Client node info was parsed correctly from chat request",
 				clientNodesMatch(ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.CHAT,
 						TestConstants.mockClientChatRequest), mockClientNode));
 
 		// LEAVE request
 		mockClientSocket = constants.mockLeaveClientSocket;
-		mockClientNode = new ClientNode(mockClientSocket, "client a", "1", ChatroomServer.clientId.get());
+		mockClientNode = new ClientNode(mockClientSocket, "client a", "1", ChatroomServer.nextClientId.get());
 		assertTrue("Client node info was parsed correctly from leave request",
 				clientNodesMatch(ChatroomServer.extractClientInfo(mockClientSocket, ClientRequest.LEAVE_CHATROOM,
 						TestConstants.mockClientLeaveRequest), mockClientNode));
