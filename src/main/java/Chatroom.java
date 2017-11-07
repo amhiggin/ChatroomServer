@@ -4,7 +4,7 @@ import java.io.PrintStream;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Chatroom {
+public class Chatroom implements Comparable<Chatroom> {
 
 	private ConcurrentSkipListSet<ClientNode> listOfConnectedClients;
 	private String chatroomId;
@@ -53,6 +53,16 @@ public class Chatroom {
 			}
 		}
 		ChatroomServer.printMessageToConsole("Finished broadcast");
+	}
+
+	@Override
+	public int compareTo(Chatroom o) {
+		if (this.getChatroomRef() < o.getChatroomRef()) {
+			return -1;
+		} else if (this.getChatroomRef() > o.getChatroomRef()) {
+			return 1;
+		}
+		return 0;
 	}
 
 	public ConcurrentSkipListSet<ClientNode> getSetOfConnectedClients() {
