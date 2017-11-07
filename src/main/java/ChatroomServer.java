@@ -42,6 +42,7 @@ public class ChatroomServer {
 			while (!terminateServer.equals(Boolean.TRUE)) {
 				try {
 					handleIncomingConnection();
+					printMessageToConsole("in loop");
 				} catch (Exception e) {
 					outputServiceErrorMessageToConsole(e.getMessage());
 				}
