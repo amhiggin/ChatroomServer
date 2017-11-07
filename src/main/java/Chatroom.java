@@ -21,7 +21,7 @@ public class Chatroom implements Comparable<Chatroom> {
 				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomId));
 		if (this.listOfConnectedClients.contains(node)) {
 			this.listOfConnectedClients.remove(node);
-			broadcastMessageInChatroom(String.format("Client %s has left the chatroom", node.getName()));
+			broadcastMessageInChatroom(String.format("%s has left this chatroom", node.getName()));
 		}
 	}
 
@@ -30,8 +30,7 @@ public class Chatroom implements Comparable<Chatroom> {
 				String.format("Adding new node %s to chatroom %s", node.getName(), this.chatroomId));
 		if (!listOfConnectedClients.contains(node)) {
 			listOfConnectedClients.add(node);
-			broadcastMessageInChatroom(String.format(ServerResponse.JOIN.getValue(), this.chatroomId,
-					ChatroomServer.serverIP, ChatroomServer.getServerPort(), this.chatroomRef, node.getJoinId()));
+			broadcastMessageInChatroom(String.format("%s has joined this chatroom", node.getName()));
 			return;
 		}
 		throw new Exception(String.format("Client %s already added to chatroom %s", node.getName(), this.chatroomId));
@@ -47,19 +46,20 @@ public class Chatroom implements Comparable<Chatroom> {
 				try {
 					PrintStream socketPrintStream = new PrintStream(client.getConnection().getOutputStream());
 					socketPrintStream.print(message);
+					ChatroomServer.printMessageToConsole("Broadcasted to client " + client.getName());
 				} catch (Exception e) {
 					ChatroomServer.printMessageToConsole("Failed to broadcast to client " + client.getName());
 				}
 			}
 		}
-		ChatroomServer.printMessageToConsole("Finished broadcast");
+		ChatroomServer.printMessageToConsole("Finished broadcast in chatroom" + getChatroomId());
 	}
 
 	@Override
-	public int compareTo(Chatroom o) {
-		if (this.getChatroomRef() < o.getChatroomRef()) {
+	public int compareTo(Chatroom chatroom) {
+		if (this.getChatroomRef() < chatroom.getChatroomRef()) {
 			return -1;
-		} else if (this.getChatroomRef() > o.getChatroomRef()) {
+		} else if (this.getChatroomRef() > chatroom.getChatroomRef()) {
 			return 1;
 		}
 		return 0;
