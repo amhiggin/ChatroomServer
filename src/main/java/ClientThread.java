@@ -203,6 +203,10 @@ public class ClientThread extends Thread {
 
 	private void writeResponseToClient(String response) throws IOException {
 		ChatroomServer.printMessageToConsole(String.format("Writing response to client: %s", response));
-		this.clientNode.getConnection().getOutputStream().write(response.getBytes());
+		try {
+			this.clientNode.getConnection().getOutputStream().write(response.getBytes());
+		} catch (Exception e) {
+			ChatroomServer.printMessageToConsole("Failed to write response to client: " + response);
+		}
 	}
 }

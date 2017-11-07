@@ -55,7 +55,7 @@ public class ChatroomServer {
 	public static void initialiseServer(String portSpecified) throws Exception {
 		serverPort = Integer.parseInt(portSpecified);
 		serverSocket = new ServerSocket(serverPort);
-		serverIP = InetAddress.getLocalHost().toString();
+		serverIP = InetAddress.getLocalHost().getHostAddress().toString();
 		initialiseServerManagementVariables();
 		System.out.println(String.format("%s>> Server started on port %s...", getCurrentDateTime(), portSpecified));
 	}
