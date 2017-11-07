@@ -98,7 +98,7 @@ public class ClientThread extends Thread {
 		ChatroomServer.printMessageToConsole(errorResponse);
 	}
 
-	private Chatroom createChatroom() throws Exception {
+	private Chatroom createChatroom() {
 		Chatroom chatroom = new Chatroom(clientNode.getChatroomId(), ChatroomServer.nextChatroomId);
 		ChatroomServer.printMessageToConsole(String.format("Created new chatroom %s", chatroom.getChatroomId()));
 		return chatroom;
@@ -109,22 +109,32 @@ public class ClientThread extends Thread {
 				this.clientNode.getChatroomId()));
 		try {
 			String requestedChatroomToJoin = this.clientNode.getChatroomId();
-
 			Chatroom requestedChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToJoin);
 			if (this.clientNode.getJoinId() == null) {
 				this.clientNode.setJoinId(ChatroomServer.nextClientId.getAndIncrement());
 			}
 
 			if (requestedChatroom != null) {
-				requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
+				ChatroomServer.printMessageToConsole(
+						String.format("Chatroom %s already existed!", this.clientNode.getChatroomId()));
+				try {
+					requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
+				} catch (Exception e) {
+					handleRequestProcessingError(Error.NodeAlreadyExists);
+					return;
+				}
 			} else {
 				requestedChatroom = createChatroom();
+				ChatroomServer.printMessageToConsole(
+						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
 				requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
 				// update server records
 				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
 				ChatroomServer.printMessageToConsole(String.format("Added client %s to chatroom %s",
 						this.clientNode.getName(), requestedChatroom.getChatroomId()));
 			}
+			ChatroomServer.printMessageToConsole(
+					String.format("Sending join response to client %s", this.clientNode.getName()));
 			String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
 					ChatroomServer.serverPort, requestedChatroom.getChatroomRef(), this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
@@ -150,7 +160,7 @@ public class ClientThread extends Thread {
 				// NOTE: don't need to remove client from server records
 				existingChatroom.removeClientNodeAndInformOtherMembers(this.clientNode);
 			}
-			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), this.clientNode.getChatroomId(),
+			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), existingChatroom.getChatroomRef(),
 					this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
 		} catch (Exception e) {
@@ -201,7 +211,7 @@ public class ClientThread extends Thread {
 		chatroomAlreadyOnRecord.removeClientNodeAndInformOtherMembers(clientNode);
 	}
 
-	private void writeResponseToClient(String response) throws IOException {
+	private void writeResponseToClient(String response) {
 		ChatroomServer.printMessageToConsole(String.format("Writing response to client: %s", response));
 		try {
 			this.clientNode.getConnection().getOutputStream().write(response.getBytes());
