@@ -31,7 +31,7 @@ public class Chatroom implements Comparable<Chatroom> {
 		if (!listOfConnectedClients.contains(node)) {
 			listOfConnectedClients.add(node);
 			broadcastMessageInChatroom(String.format(ServerResponse.JOIN.getValue(), this.chatroomId,
-					ChatroomServer.serverIP, ChatroomServer.getServerPort(), this.chatroomId, node.getJoinId()));
+					ChatroomServer.serverIP, ChatroomServer.getServerPort(), this.chatroomRef, node.getJoinId()));
 			return;
 		}
 		throw new Exception(String.format("Client %s already added to chatroom %s", node.getName(), this.chatroomId));
