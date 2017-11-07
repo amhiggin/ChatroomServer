@@ -3,6 +3,7 @@ package main.java;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class ChatroomServer {
 	private static ConcurrentSkipListSet<Chatroom> activeChatRooms;
 	private static ConcurrentSkipListSet<ClientNode> connectedClients;
 	private static int serverPort;
+	public static String serverIP;
 
 	/*
 	 * Server port is passed as arg[0]
@@ -53,6 +55,7 @@ public class ChatroomServer {
 	public static void initialiseServer(String portSpecified) throws Exception {
 		serverPort = Integer.parseInt(portSpecified);
 		serverSocket = new ServerSocket(serverPort);
+		serverIP = InetAddress.getLocalHost().toString();
 		initialiseServerManagementVariables();
 		System.out.println(String.format("%s>> Server started on port %s...", getCurrentDateTime(), portSpecified));
 	}
