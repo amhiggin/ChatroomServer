@@ -115,13 +115,18 @@ public class ClientThread extends Thread {
 			}
 
 			if (requestedChatroom != null) {
-				ChatroomServer.printMessageToConsole(
-						String.format("Chatroom %s already existed!", this.clientNode.getChatroomId()));
+				ChatroomServer.printMessageToConsole(String.format("Chatroom %s already exists.. Will add client %s",
+						this.clientNode.getChatroomId(), this.clientNode.getName()));
 				try {
 					requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
 				} catch (Exception e) {
-					handleRequestProcessingError(Error.NodeAlreadyExists);
-					return;
+					ChatroomServer.printMessageToConsole(
+							String.format("%s was already a member of %s - resending JOIN response", this.clientNode,
+									requestedChatroom.getChatroomId()));
+					String responseToClient = String.format(ServerResponse.JOIN.getValue(),
+							this.clientNode.getChatroomId(), 0, ChatroomServer.serverPort,
+							requestedChatroom.getChatroomRef(), this.clientNode.getJoinId());
+					writeResponseToClient(responseToClient);
 				}
 			} else {
 				requestedChatroom = createChatroom();
