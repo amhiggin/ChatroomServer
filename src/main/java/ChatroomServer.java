@@ -162,9 +162,11 @@ public class ChatroomServer {
 			if (requestedAction.equals(ClientRequest.JOIN_CHATROOM) && !getAllConnectedClients().contains(clientNode)
 					&& (retrieveRequestedChatroomIfExists(clientNode.getChatroomId()) != null)) {
 				addClientRecordToServer(clientNode);
+				printMessageToConsole("Successfully added new client node to server");
 			} else if (requestedAction.equals(ClientRequest.DISCONNECT)
 					&& getAllConnectedClients().contains(clientNode)) {
 				removeClientRecordFromServer(clientNode, retrieveRequestedChatroomIfExists(clientNode.getChatroomId()));
+				printMessageToConsole("Successfully removed client node from server");
 			}
 		}
 		// If we have left the chatroom, we want to keep the record that we were

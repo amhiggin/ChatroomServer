@@ -64,6 +64,7 @@ public class ClientThread extends Thread {
 				return;
 			}
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
+			ChatroomServer.printMessageToConsole("Finished running thread");
 		} catch (Exception e) {
 			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 			e.printStackTrace(); // TODO @Amber remove later
