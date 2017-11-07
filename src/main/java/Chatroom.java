@@ -34,10 +34,19 @@ public class Chatroom {
 	// Synchronized to account for completion of message sending before allowing
 	// client to leave chatroom
 	public synchronized void broadcastMessageInChatroom(String message) throws IOException {
+		ChatroomServer.printMessageToConsole("Broadcasting message in chatroom: " + message);
 		for (ClientNode client : listOfConnectedClients) {
-			PrintStream socketPrintStream = new PrintStream(client.getConnection().getOutputStream());
-			socketPrintStream.print(message);
+			if (client != null) {
+				try {
+					ChatroomServer.printMessageToConsole("Broadcasting to client " + client.getName());
+					PrintStream socketPrintStream = new PrintStream(client.getConnection().getOutputStream());
+					socketPrintStream.print(message);
+				} catch (Exception e) {
+					ChatroomServer.printMessageToConsole("Failed to broadcast to client " + client.getName());
+				}
+			}
 		}
+		ChatroomServer.printMessageToConsole("Finished broadcast");
 	}
 
 	public ConcurrentSkipListSet<ClientNode> getSetOfConnectedClients() {
