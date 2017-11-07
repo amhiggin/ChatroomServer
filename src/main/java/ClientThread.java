@@ -138,8 +138,6 @@ public class ClientThread extends Thread {
 			String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
 					ChatroomServer.serverPort, requestedChatroom.getChatroomRef(), this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
-			requestedChatroom.broadcastMessageInChatroom(
-					String.format("A new client called %s has joined the chatroom!", clientNode.getName()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			handleRequestProcessingError(Error.JoinChatroom);
