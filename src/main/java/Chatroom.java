@@ -16,21 +16,19 @@ public class Chatroom implements Comparable<Chatroom> {
 		this.chatroomRef = Integer.valueOf(chatroomRef.intValue());
 	}
 
-	public void removeClientNodeAndInformOtherMembers(ClientNode node) {
+	public void removeClientNode(ClientNode node) {
 		ChatroomServer.printMessageToConsole(
 				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomId));
 		if (this.listOfConnectedClients.contains(node)) {
 			this.listOfConnectedClients.remove(node);
-			broadcastMessageInChatroom(String.format("%s has left this chatroom", node.getName()));
 		}
 	}
 
-	public void addNewClientToChatroomAndNotifyMembers(ClientNode node) throws Exception {
+	public void addNewClientToChatroom(ClientNode node) throws Exception {
 		ChatroomServer.printMessageToConsole(
 				String.format("Adding new node %s to chatroom %s", node.getName(), this.chatroomId));
 		if (!listOfConnectedClients.contains(node)) {
 			listOfConnectedClients.add(node);
-			broadcastMessageInChatroom(String.format("%s has joined this chatroom", node.getName()));
 			return;
 		}
 		throw new Exception(String.format("Client %s already added to chatroom %s", node.getName(), this.chatroomId));

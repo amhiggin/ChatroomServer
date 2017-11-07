@@ -118,7 +118,7 @@ public class ClientThread extends Thread {
 				ChatroomServer.printMessageToConsole(String.format("Chatroom %s already exists.. Will add client %s",
 						this.clientNode.getChatroomId(), this.clientNode.getName()));
 				try {
-					requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
+					requestedChatroom.addNewClientToChatroom(clientNode);
 				} catch (Exception e) {
 					ChatroomServer.printMessageToConsole(
 							String.format("%s was already a member of %s - resending JOIN response", this.clientNode,
@@ -127,12 +127,14 @@ public class ClientThread extends Thread {
 							this.clientNode.getChatroomId(), 0, ChatroomServer.serverPort,
 							requestedChatroom.getChatroomRef(), this.clientNode.getJoinId());
 					writeResponseToClient(responseToClient);
+					requestedChatroom.broadcastMessageInChatroom(
+							String.format("%s has joined this chatroom", clientNode.getName()));
 				}
 			} else {
 				requestedChatroom = createChatroom();
 				ChatroomServer.printMessageToConsole(
 						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
-				requestedChatroom.addNewClientToChatroomAndNotifyMembers(clientNode);
+				requestedChatroom.addNewClientToChatroom(clientNode);
 				// update server records
 				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
 			}
@@ -141,6 +143,8 @@ public class ClientThread extends Thread {
 			String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
 					ChatroomServer.serverPort, requestedChatroom.getChatroomRef(), this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
+			requestedChatroom
+					.broadcastMessageInChatroom(String.format("%s has joined this chatroom", clientNode.getName()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			handleRequestProcessingError(Error.JoinChatroom);
@@ -160,11 +164,13 @@ public class ClientThread extends Thread {
 		try {
 			if (existingChatroom != null) {
 				// NOTE: don't need to remove client from server records
-				existingChatroom.removeClientNodeAndInformOtherMembers(this.clientNode);
+				existingChatroom.removeClientNode(this.clientNode);
 			}
 			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), existingChatroom.getChatroomRef(),
 					this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
+			existingChatroom
+					.broadcastMessageInChatroom(String.format("%s has left this chatroom", clientNode.getName()));
 		} catch (Exception e) {
 			handleRequestProcessingError(Error.LeaveChatroom);
 		}
@@ -210,7 +216,7 @@ public class ClientThread extends Thread {
 		String parsedRequestedChatroomToLeave = this.clientNode.getChatroomId();
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer
 				.retrieveRequestedChatroomIfExists(parsedRequestedChatroomToLeave);
-		chatroomAlreadyOnRecord.removeClientNodeAndInformOtherMembers(clientNode);
+		chatroomAlreadyOnRecord.removeClientNode(clientNode);
 	}
 
 	private void writeResponseToClient(String response) {
