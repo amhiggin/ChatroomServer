@@ -40,11 +40,11 @@ public class Chatroom implements Comparable<Chatroom> {
 	// Synchronized to account for completion of message sending before allowing
 	// client to leave chatroom
 	public synchronized void broadcastMessageInChatroom(String message) {
-		ChatroomServer.printMessageToConsole("Broadcasting message in chatroom: " + message);
+		ChatroomServer
+				.printMessageToConsole("Will broadcast message to all clients in chatroom as follows: " + message);
 		for (ClientNode client : listOfConnectedClients) {
 			if (client != null) {
 				try {
-					ChatroomServer.printMessageToConsole("Broadcasting to client " + client.getName());
 					PrintStream socketPrintStream = new PrintStream(client.getConnection().getOutputStream());
 					socketPrintStream.print(message);
 				} catch (Exception e) {

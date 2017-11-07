@@ -115,7 +115,6 @@ public class ChatroomServer {
 
 	public static synchronized ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType,
 			List<String> message) throws IOException {
-		printMessageToConsole("in extractClientInfo method");
 		switch (requestType) {
 		case JOIN_CHATROOM:
 			return new ClientNode(clientSocket, message.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
@@ -173,11 +172,10 @@ public class ChatroomServer {
 	}
 
 	public static synchronized ClientRequest requestedAction(List<String> message) throws IOException {
-		printMessageToConsole("In requestedAction method");
 		String requestType = parseClientRequestType(message);
 		try {
 			ClientRequest clientRequest = ClientRequest.valueOf(requestType);
-			printMessageToConsole("The parsed request type matched with " + clientRequest.getValue());
+			printMessageToConsole("The parsed request type is " + clientRequest.getValue());
 			return clientRequest;
 		} catch (Exception e) {
 			outputServiceErrorMessageToConsole("Error occurred trying to fetch the request type");
@@ -188,8 +186,6 @@ public class ChatroomServer {
 	private static String parseClientRequestType(List<String> message) throws IOException {
 		printMessageToConsole("In parseClientRequestType method");
 		String[] requestType = message.get(0).split(SPLIT_CRITERIA, 0);
-		// TODO refine message
-		printMessageToConsole(String.format("Parsed request type (first time) '%s", requestType[0]));
 		if (requestType[0].contains("HELO")) {
 			String temp = requestType[0];
 			String[] splitString = temp.split(" ", 0);
