@@ -18,7 +18,6 @@ public class ClientThread extends Thread {
 	private static final String HELO_IDENTIFIER = "HELO ";
 
 	private ClientNode clientNode;
-	private int serverPort;
 	private ClientRequest requestType;
 	private List<String> receivedFromClient;
 
@@ -92,7 +91,8 @@ public class ClientThread extends Thread {
 			this.clientNode.getConnection().getOutputStream().write(errorResponse.getBytes());
 		} catch (IOException e) {
 			String temporaryErrorMessageHolder = errorResponse;
-			errorResponse = "Failed to communicate failure response to client: " + temporaryErrorMessageHolder;
+			errorResponse = "Failed to communicate failure response to client: " + temporaryErrorMessageHolder
+					+ ". Exception thrown: " + e.getMessage();
 		}
 		ChatroomServer.printMessageToConsole(errorResponse);
 	}
@@ -125,7 +125,7 @@ public class ClientThread extends Thread {
 						this.clientNode.getName(), requestedChatroom.getChatroomId()));
 			}
 			String responseToClient = String.format(ServerResponse.JOIN.getValue(), this.clientNode.getChatroomId(), 0,
-					this.serverPort, this.clientNode.getChatroomId(), this.clientNode.getJoinId());
+					ChatroomServer.serverPort, this.clientNode.getChatroomId(), this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
 			requestedChatroom.broadcastMessageInChatroom(
 					String.format("A new client called %s has joined the chatroom!", clientNode.getName()));
@@ -169,8 +169,8 @@ public class ClientThread extends Thread {
 
 	private String constructHelloResponse(List<String> receivedFromClient2) {
 		String helloResponse = String.format(ServerResponse.HELO.getValue(),
-				this.receivedFromClient.get(0).split(HELO_IDENTIFIER)[1].replaceAll("\n", ""),
-				ChatroomServer.getServerSocket().getInetAddress(), this.serverPort, Constants.STUDENT_ID);
+				this.receivedFromClient.get(0).split(HELO_IDENTIFIER)[1].replaceAll("\n", ""), ChatroomServer.serverIP,
+				ChatroomServer.serverPort, Constants.STUDENT_ID);
 		ChatroomServer.printMessageToConsole(String.format("Sent %s ", helloResponse));
 		return helloResponse;
 	}

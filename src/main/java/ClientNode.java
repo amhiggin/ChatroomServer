@@ -42,6 +42,7 @@ public class ClientNode implements Comparable<ClientNode> {
 		this.joinId = joinId;
 	}
 
+	@Override
 	public int compareTo(ClientNode o) {
 		if (this.getJoinId() < o.getJoinId()) {
 			return -1;

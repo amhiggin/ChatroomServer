@@ -29,8 +29,8 @@ public class ChatroomServer {
 	private static AtomicBoolean terminateServer;
 	private static ConcurrentSkipListSet<Chatroom> activeChatRooms;
 	private static ConcurrentSkipListSet<ClientNode> connectedClients;
-	private static int serverPort;
-	public static String serverIP;
+	static int serverPort;
+	static String serverIP;
 
 	/*
 	 * Server port is passed as arg[0]
