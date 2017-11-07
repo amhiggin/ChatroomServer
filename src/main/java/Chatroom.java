@@ -13,7 +13,7 @@ public class Chatroom {
 	public Chatroom(String id, AtomicInteger chatroomRef) {
 		this.chatroomId = id;
 		this.listOfConnectedClients = new ConcurrentSkipListSet<ClientNode>();
-		this.chatroomRef = chatroomRef.get();
+		this.chatroomRef = Integer.valueOf(chatroomRef.intValue());
 	}
 
 	public void removeClientNodeAndInformOtherMembers(ClientNode node) {
