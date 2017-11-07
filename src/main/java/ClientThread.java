@@ -127,8 +127,9 @@ public class ClientThread extends Thread {
 							this.clientNode.getChatroomId(), 0, ChatroomServer.serverPort,
 							requestedChatroom.getChatroomRef(), this.clientNode.getJoinId());
 					writeResponseToClient(responseToClient);
-					requestedChatroom.broadcastMessageInChatroom(
-							String.format("%s has joined this chatroom", clientNode.getName()));
+					// requestedChatroom.broadcastMessageInChatroom(
+					// String.format("%s has joined this chatroom",
+					// clientNode.getName()));
 				}
 			} else {
 				requestedChatroom = createChatroom();
@@ -144,8 +145,9 @@ public class ClientThread extends Thread {
 					ChatroomServer.serverIP, ChatroomServer.serverPort, requestedChatroom.getChatroomRef(),
 					this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
-			requestedChatroom
-					.broadcastMessageInChatroom(String.format("%s has joined this chatroom", clientNode.getName()));
+			// requestedChatroom
+			// .broadcastMessageInChatroom(String.format("%s has joined this
+			// chatroom", clientNode.getName()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			handleRequestProcessingError(Error.JoinChatroom);
