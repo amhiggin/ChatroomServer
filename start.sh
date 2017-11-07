@@ -9,4 +9,4 @@
 
 echo "Starting up chatroom server on port $1"
 
-java -showversion -cp lib/*,src/main/java/* main.java.ChatroomServer $1
+java -showversion -cp lib/*:src/main/java/* src main.java.ChatroomServer $1
