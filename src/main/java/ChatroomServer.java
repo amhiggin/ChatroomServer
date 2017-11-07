@@ -89,10 +89,11 @@ public class ChatroomServer {
 		BufferedInputStream inputStream = new BufferedInputStream(clientSocket.getInputStream());
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		int result = inputStream.read();
-		while (result != -1) {
+		while ((result != -1) && (inputStream.available() > 0)) {
 			outputStream.write((byte) result);
+			printMessageToConsole("added new byte " + result);
 			result = inputStream.read();
-			printMessageToConsole("read byte " + result);
+			printMessageToConsole("reading next byte .." + result);
 		}
 		// Assuming UTF-8 encoding
 		String inFromClient = outputStream.toString("UTF-8");
