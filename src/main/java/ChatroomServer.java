@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.joda.time.LocalDateTime;
 
 public class ChatroomServer {
 
@@ -58,9 +58,8 @@ public class ChatroomServer {
 	}
 
 	private static String getCurrentDateTime() {
-		DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yyy HH:mm:ss");
-		LocalDateTime now = LocalDateTime.now();
-		return format.format(now);
+		LocalDateTime now = new LocalDateTime();
+		return now.toString();
 	}
 
 	private static void initialiseServerManagementVariables() {
