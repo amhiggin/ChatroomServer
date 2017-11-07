@@ -61,6 +61,7 @@ public class ClientThread extends Thread {
 				break;
 			default:
 				handleRequestProcessingError(Error.InvalidRequest);
+				return;
 			}
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
 		} catch (Exception e) {
