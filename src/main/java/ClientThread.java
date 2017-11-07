@@ -141,6 +141,7 @@ public class ClientThread extends Thread {
 			requestedChatroom.broadcastMessageInChatroom(
 					String.format("A new client called %s has joined the chatroom!", clientNode.getName()));
 		} catch (Exception e) {
+			e.printStackTrace();
 			handleRequestProcessingError(Error.JoinChatroom);
 		}
 	}
