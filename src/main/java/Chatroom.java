@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Chatroom implements Comparable<Chatroom> {
 
-	public static String ALREADY_JOINED = "%s has joined this chatroom";
 	private ConcurrentSkipListSet<ClientNode> listOfConnectedClients;
 	private String chatroomId;
 	private Integer chatroomRef;
@@ -22,7 +21,7 @@ public class Chatroom implements Comparable<Chatroom> {
 				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomId));
 		if (this.listOfConnectedClients.contains(node)) {
 			this.listOfConnectedClients.remove(node);
-			broadcastMessageInChatroom(String.format("%s has left this chatroom", node.getName()));
+			broadcastMessageInChatroom(String.format("Client %s has left the chatroom", node.getName()));
 		}
 	}
 
@@ -31,7 +30,8 @@ public class Chatroom implements Comparable<Chatroom> {
 				String.format("Adding new node %s to chatroom %s", node.getName(), this.chatroomId));
 		if (!listOfConnectedClients.contains(node)) {
 			listOfConnectedClients.add(node);
-			broadcastMessageInChatroom(String.format(ALREADY_JOINED, node.getName()));
+			broadcastMessageInChatroom(String.format(ServerResponse.JOIN.getValue(), this.chatroomId,
+					ChatroomServer.serverIP, ChatroomServer.getServerPort(), this.chatroomRef, node.getJoinId()));
 			return;
 		}
 		throw new Exception(String.format("Client %s already added to chatroom %s", node.getName(), this.chatroomId));
