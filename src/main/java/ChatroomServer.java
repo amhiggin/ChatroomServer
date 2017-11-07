@@ -92,9 +92,11 @@ public class ChatroomServer {
 		while (result != -1) {
 			outputStream.write((byte) result);
 			result = inputStream.read();
+			printMessageToConsole("read byte " + result);
 		}
 		// Assuming UTF-8 encoding
 		String inFromClient = outputStream.toString("UTF-8");
+		printMessageToConsole("inFromClient is: " + inFromClient);
 		List<String> lines = getRequestStringAsArrayList(inFromClient);
 
 		printMessageToConsole("Thats all the lines!");
