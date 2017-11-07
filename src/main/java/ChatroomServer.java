@@ -1,11 +1,11 @@
 package main.java;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -86,19 +86,27 @@ public class ChatroomServer {
 
 	public static synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
 		printMessageToConsole("retrieving message from the client (getFullMessageFromClient)"); // TODO
-																								// refine
-		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		List<String> lines = new LinkedList<String>(); // create a new list
-		String line = inFromClient.readLine();
-		while (line != null) {
-			lines.add(line);
-			printMessageToConsole(String.format("Read another line: %s", line));
-			line = inFromClient.readLine();
-			if (line.isEmpty()) {
-				return lines;
-			}
+		BufferedInputStream inputStream = new BufferedInputStream(clientSocket.getInputStream());
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		int result = inputStream.read();
+		while (result != -1) {
+			outputStream.write((byte) result);
+			result = inputStream.read();
 		}
+		// Assuming UTF-8 encoding
+		String inFromClient = outputStream.toString("UTF-8");
+		List<String> lines = getRequestStringAsArrayList(inFromClient);
+
 		printMessageToConsole("Thats all the lines!");
+		return lines;
+	}
+
+	private static List<String> getRequestStringAsArrayList(String inFromClient) {
+		String[] linesArray = inFromClient.split("\n");
+		List<String> lines = new ArrayList<String>();
+		for (String line : linesArray) {
+			lines.add(line);
+		}
 		return lines;
 	}
 

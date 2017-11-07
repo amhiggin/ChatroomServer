@@ -3,3 +3,4 @@
 
 # Ignore all class files (SG)
 *.class
+*.classpath
