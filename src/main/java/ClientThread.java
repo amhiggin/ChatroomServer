@@ -232,7 +232,6 @@ public class ClientThread extends Thread {
 			// TODO check this
 			this.clientNode.getConnection().getOutputStream().flush();
 			this.clientNode.getConnection().getOutputStream().close();
-			this.clientNode.getConnection().getInputStream().close();
 			ChatroomServer.printMessageToConsole("Response sent to client successfully");
 		} catch (Exception e) {
 			e.printStackTrace();
