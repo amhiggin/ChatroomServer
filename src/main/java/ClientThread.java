@@ -41,7 +41,7 @@ public class ClientThread extends Thread {
 			switch (this.requestType) {
 			case JOIN_CHATROOM:
 				joinChatroom();
-				ChatroomServer.outputServiceErrorMessageToConsole("Going to execute break now");
+				ChatroomServer.printMessageToConsole("Going to execute break now");
 				break;
 			case HELO:
 				sayHello();

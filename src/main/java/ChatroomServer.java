@@ -40,12 +40,9 @@ public class ChatroomServer {
 		try {
 			initialiseServer(args[0]);
 			while (running) {
-				try {
-					handleIncomingConnection();
-					printMessageToConsole("in loop");
-				} catch (Exception e) {
-					outputServiceErrorMessageToConsole(e.getMessage());
-				}
+				printMessageToConsole("before loop");
+				handleIncomingConnection();
+				printMessageToConsole("after loop");
 			}
 		} catch (Exception e) {
 			outputServiceErrorMessageToConsole(e.getMessage());
@@ -76,7 +73,7 @@ public class ChatroomServer {
 		nextChatroomId = new AtomicInteger(0);
 	}
 
-	private static synchronized void handleIncomingConnection() throws Exception {
+	private static void handleIncomingConnection() throws Exception {
 		Socket clientSocket = serverSocket.accept();
 		clientSocket.setKeepAlive(true);
 		System.out.println(String.format("%s>> Connection received from %s...", getCurrentDateTime(),
@@ -93,7 +90,7 @@ public class ChatroomServer {
 		// newClientConnectionThread.run();
 	}
 
-	public static synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
+	public static List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
 		BufferedInputStream inputStream = new BufferedInputStream(clientSocket.getInputStream());
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		int result = inputStream.read();
@@ -117,8 +114,8 @@ public class ChatroomServer {
 		return lines;
 	}
 
-	public static synchronized ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType,
-			List<String> message) throws IOException {
+	public static ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType, List<String> message)
+			throws IOException {
 		switch (requestType) {
 		case JOIN_CHATROOM:
 			return new ClientNode(clientSocket, message.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
@@ -145,7 +142,7 @@ public class ChatroomServer {
 		}
 	}
 
-	public static void shutdown() {
+	public static synchronized void shutdown() {
 		try {
 			System.out.println(String.format("%s>> Server shutting down...", getCurrentDateTime()));
 			threadPoolExecutor.shutdown();
@@ -182,7 +179,7 @@ public class ChatroomServer {
 		// in that chatroom (for repeated LEAVE requests)
 	}
 
-	public static synchronized ClientRequest requestedAction(List<String> message) throws IOException {
+	public static ClientRequest requestedAction(List<String> message) throws IOException {
 		String requestType = parseClientRequestType(message);
 		try {
 			ClientRequest clientRequest = ClientRequest.valueOf(requestType);
