@@ -11,13 +11,12 @@ import java.util.List;
 import org.joda.time.LocalDateTime;
 
 /*
- * Thread which is created for every new client interaction.
+ * Runnable task which is created for every new client interaction.
  * Enables handling multiple requests and responses in parallel.
  */
 
-public class ClientThread implements Runnable {
+public class ClientTask implements Runnable {
 
-	private static final int KILL_REQUEST_TIMEOUT_MILLIS = 10000;
 	private static final String SPLIT_PATTERN = ": ";
 	private static final String HELO_IDENTIFIER = "HELO ";
 	private static final int UNDEFINED_JOIN_ID = -1;
@@ -32,11 +31,10 @@ public class ClientThread implements Runnable {
 	private List<String> receivedFromClient;
 	private OutputStreamWriter clientOutputStreamWriter;
 
-	public ClientThread(Socket clientSocket) {
-		printThreadMessageToConsole("spawning new client thread...");
+	public ClientTask(Socket clientSocket) {
+		printThreadMessageToConsole("Creating new runnable task for client connection...");
 		try {
 			this.receivedFromClient = getFullMessageFromClient(clientSocket);
-
 			if (this.receivedFromClient != null) {
 				this.requestType = requestedAction(this.receivedFromClient);
 				this.clientNode = extractClientInfo(clientSocket, this.requestType, this.receivedFromClient);
@@ -44,15 +42,12 @@ public class ClientThread implements Runnable {
 						this.clientNode.getConnection().getOutputStream());
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		printThreadMessageToConsole("Done spawning new thread");
 	}
 
 	@Override
 	public void run() {
-		printThreadMessageToConsole("In run method");
 		try {
 			if (this.requestType == null) {
 				handleRequestProcessingError(Error.InvalidRequest);
@@ -86,11 +81,10 @@ public class ClientThread implements Runnable {
 				handleRequestProcessingError(Error.InvalidRequest);
 				return;
 			}
-			printThreadMessageToConsole("Exited the switch statement");
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
 			printThreadMessageToConsole("Finished running thread");
 		} catch (Exception e) {
-			e.printStackTrace(); // TODO @Amber remove later
+			e.printStackTrace();
 			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 		}
 	}
@@ -102,7 +96,6 @@ public class ClientThread implements Runnable {
 		try {
 			wait(10000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (!ChatroomServer.getServerSocket().isClosed()) {
@@ -195,11 +188,6 @@ public class ClientThread implements Runnable {
 	}
 
 	private void leaveChatroom() {
-		/*
-		 * LEAVE_CHATROOM: [ROOM_REF] JOIN_ID: [integer previously provided by
-		 * server on join] CLIENT_NAME: [string Handle to identifier client
-		 * user]
-		 */
 		printThreadMessageToConsole(String.format("Client %s leaving chatroom %s", this.clientNode.getName(),
 				this.clientNode.getChatroomId()));
 		String requestedChatroomToLeave = this.clientNode.getChatroomId();
@@ -343,7 +331,6 @@ public class ClientThread implements Runnable {
 	}
 
 	private String parseClientRequestType(List<String> message) throws IOException {
-		printThreadMessageToConsole("In parseClientRequestType method");
 		String[] requestType = message.get(0).split(SPLIT_PATTERN, 0);
 		if (requestType[0].contains("HELO")) {
 			String temp = requestType[0];
