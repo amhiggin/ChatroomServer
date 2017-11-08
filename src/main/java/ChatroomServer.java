@@ -40,7 +40,7 @@ public class ChatroomServer {
 	public static void main(String[] args) {
 		try {
 			initialiseServer(args[0]);
-			while (terminateServer.equals(Boolean.FALSE)) {
+			while (!terminateServer.equals(Boolean.TRUE)) {
 				try {
 					handleIncomingConnection();
 					printMessageToConsole("in loop");
