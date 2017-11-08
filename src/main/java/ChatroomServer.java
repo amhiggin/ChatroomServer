@@ -40,13 +40,13 @@ public class ChatroomServer {
 	public static void main(String[] args) {
 		try {
 			initialiseServer(args[0]);
-			while (terminateServer.get() != true) {
-				try {
+			try {
+				while (terminateServer.get() != true) {
 					handleIncomingConnection();
 					printMessageToConsole("in loop");
-				} catch (Exception e) {
-					outputServiceErrorMessageToConsole(e.getMessage());
 				}
+			} catch (Exception e) {
+				outputServiceErrorMessageToConsole(e.getMessage());
 			}
 		} catch (Exception e) {
 			outputServiceErrorMessageToConsole(e.getMessage());
