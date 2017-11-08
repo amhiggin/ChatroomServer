@@ -174,9 +174,10 @@ public class ClientThread extends Thread {
 		writeResponseToClient(responseToClient);
 
 		// Broadcast message in chatroom
-		String clientJoinedChatroomMessage = String.format("%s has joined this chatroom", this.clientNode.getName());
+		String clientJoinedChatroomMessage = String.format("%s has joined this chatroom\n\n",
+				this.clientNode.getName());
 		String chatMessage = String.format(ServerResponse.CHAT.getValue(), requestedChatroom.getChatroomRef(),
-				this.clientNode.getJoinId(), this.clientNode.getName(), clientJoinedChatroomMessage);
+				this.clientNode.getName(), clientJoinedChatroomMessage);
 		requestedChatroom.broadcastMessageInChatroom(chatMessage);
 	}
 
@@ -198,10 +199,10 @@ public class ClientThread extends Thread {
 			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), existingChatroom.getChatroomRef(),
 					this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
-			String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
+			String clientLeftChatroomMessage = String.format("%s has left this chatroom\n\n", clientNode.getName());
 			// must create chat message
 			String chatMessage = String.format(ServerResponse.CHAT.getValue(), existingChatroom.getChatroomRef(),
-					this.clientNode.getJoinId(), this.clientNode.getName(), clientLeftChatroomMessage);
+					this.clientNode.getName(), clientLeftChatroomMessage);
 			existingChatroom.broadcastMessageInChatroom(chatMessage);
 		} catch (Exception e) {
 			e.printStackTrace();
