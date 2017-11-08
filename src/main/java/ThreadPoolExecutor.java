@@ -5,6 +5,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/*
+ * Threadpool executor which can manage and execute a queue of threads.
+ */
+
 public class ThreadPoolExecutor {
 
 	private static final long WAIT_TIME = 10; // 10 seconds

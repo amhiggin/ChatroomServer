@@ -12,9 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ClientThread extends Thread {
 
 	private static final int KILL_REQUEST_TIMEOUT_MILLIS = 10000;
-
 	private static final String SPLIT_PATTERN = ": ";
-
 	private static final String HELO_IDENTIFIER = "HELO ";
 
 	private ClientNode clientNode;
@@ -66,8 +64,8 @@ public class ClientThread extends Thread {
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
 			ChatroomServer.printMessageToConsole("Finished running thread");
 		} catch (Exception e) {
-			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 			e.printStackTrace(); // TODO @Amber remove later
+			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 		}
 	}
 
@@ -79,7 +77,7 @@ public class ClientThread extends Thread {
 			// Assume after 10 seconds the request must have succeeded
 			sleep(KILL_REQUEST_TIMEOUT_MILLIS);
 		} catch (InterruptedException e) {
-			; // Do nothing
+			e.printStackTrace();
 		}
 		if (!ChatroomServer.getServerSocket().isClosed()) {
 			handleRequestProcessingError(Error.KillService);
@@ -95,6 +93,7 @@ public class ClientThread extends Thread {
 			String temporaryErrorMessageHolder = errorResponse;
 			errorResponse = "Failed to communicate failure response to client: " + temporaryErrorMessageHolder
 					+ ". Exception thrown: " + e.getMessage();
+			e.printStackTrace();
 		}
 		ChatroomServer.printMessageToConsole(errorResponse);
 	}
@@ -121,11 +120,12 @@ public class ClientThread extends Thread {
 				try {
 					requestedChatroom.addNewClientToChatroom(clientNode);
 				} catch (Exception e) {
+					e.printStackTrace();
 					ChatroomServer.printMessageToConsole(
 							String.format("%s was already a member of %s - resending JOIN response", this.clientNode,
 									requestedChatroom.getChatroomId()));
 					String responseToClient = String.format(ServerResponse.JOIN.getValue(),
-							this.clientNode.getChatroomId(), 0, ChatroomServer.serverPort,
+							this.clientNode.getChatroomId(), ChatroomServer.serverIP, ChatroomServer.serverPort,
 							requestedChatroom.getChatroomRef(), this.clientNode.getJoinId());
 					writeResponseToClient(responseToClient);
 					// requestedChatroom.broadcastMessageInChatroom(
@@ -176,6 +176,7 @@ public class ClientThread extends Thread {
 			existingChatroom
 					.broadcastMessageInChatroom(String.format("%s has left this chatroom", clientNode.getName()));
 		} catch (Exception e) {
+			e.printStackTrace();
 			handleRequestProcessingError(Error.LeaveChatroom);
 		}
 	}
@@ -186,6 +187,7 @@ public class ClientThread extends Thread {
 			String response = constructHelloResponse(this.receivedFromClient);
 			writeResponseToClient(response);
 		} catch (Exception e) {
+			e.printStackTrace();
 			handleRequestProcessingError(Error.Helo);
 		}
 	}
@@ -194,13 +196,10 @@ public class ClientThread extends Thread {
 		String helloResponse = String.format(ServerResponse.HELO.getValue(),
 				this.receivedFromClient.get(0).split(HELO_IDENTIFIER)[1].replaceAll("\n", ""), ChatroomServer.serverIP,
 				ChatroomServer.serverPort, Constants.STUDENT_ID);
-		ChatroomServer.printMessageToConsole(String.format("Sent %s ", helloResponse));
 		return helloResponse;
 	}
 
 	private void chat() throws IOException {
-		ChatroomServer.printMessageToConsole(String.format("Client %s chatting in chatroom %s",
-				this.clientNode.getName(), this.clientNode.getChatroomId()));
 		String message = this.receivedFromClient.get(3).split(SPLIT_PATTERN, 0)[1];
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer
 				.retrieveRequestedChatroomIfExists(this.clientNode.getChatroomId());
@@ -211,6 +210,9 @@ public class ClientThread extends Thread {
 			chatroomAlreadyOnRecord.broadcastMessageInChatroom(responseToClient);
 			return;
 		}
+		ChatroomServer.printMessageToConsole(String.format("Client %s chatting in chatroom %s",
+				this.clientNode.getName(), this.clientNode.getChatroomId()));
+
 		handleRequestProcessingError(Error.Chat);
 	}
 
@@ -227,7 +229,9 @@ public class ClientThread extends Thread {
 		ChatroomServer.printMessageToConsole(String.format("Writing response to client: %s", response));
 		try {
 			this.clientNode.getConnection().getOutputStream().write(response.getBytes());
+			ChatroomServer.printMessageToConsole("Response sent to client successfully");
 		} catch (Exception e) {
+			e.printStackTrace();
 			ChatroomServer.printMessageToConsole("Failed to write response to client: " + response);
 		}
 	}
