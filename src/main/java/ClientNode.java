@@ -1,6 +1,7 @@
 package main.java;
 
 import java.net.Socket;
+import java.net.SocketException;
 
 /*
  * An object for storing the info about a client connection.
@@ -16,10 +17,20 @@ public class ClientNode implements Comparable<ClientNode> {
 	private Integer joinId;
 
 	public ClientNode(Socket connection, String clientName, String chatroomId, Integer joinId) {
-		this.connection = connection;
+		setConnection(connection);
 		this.clientName = clientName;
 		this.chatroomId = chatroomId;
 		this.joinId = joinId;
+	}
+
+	private void setConnection(Socket connection) {
+		this.connection = connection;
+		try {
+			this.connection.setKeepAlive(true);
+			this.connection.setTcpNoDelay(true);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String getName() {

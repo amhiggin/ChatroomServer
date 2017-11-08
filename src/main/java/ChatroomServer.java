@@ -76,6 +76,7 @@ public class ChatroomServer {
 	private static void handleIncomingConnection() throws Exception {
 		Socket clientSocket = serverSocket.accept();
 		clientSocket.setKeepAlive(true);
+		clientSocket.setTcpNoDelay(true);
 		System.out.println(String.format("%s>> Connection received from %s...", getCurrentDateTime(),
 				clientSocket.getInetAddress().toString()));
 
