@@ -94,6 +94,7 @@ public class ClientThread extends Thread {
 			e.printStackTrace(); // TODO @Amber remove later
 			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 		}
+		this.interrupt();
 	}
 
 	private void killService() {

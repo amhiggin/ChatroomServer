@@ -35,7 +35,7 @@ public class ThreadPoolExecutor {
 	public void submitTask(Socket clientSocket) throws Exception {
 		try {
 			ClientThread thread = new ClientThread(clientSocket);
-			this.threadPool.submit(thread);
+			this.threadPool.execute(thread);
 			ChatroomServer.printServerMessageToConsole("Submitted thread to threadpool");
 		} catch (Exception e) {
 			ChatroomServer
