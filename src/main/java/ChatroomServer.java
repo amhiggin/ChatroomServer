@@ -1,27 +1,15 @@
 package main.java;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.joda.time.LocalDateTime;
 
 public class ChatroomServer {
-
-	private static final String SPLIT_CRITERIA = ": ";
-	private static final int UNDEFINED_JOIN_ID = -1;
-	private static final String JOIN_CHATROOM_IDENTIFIER = "JOIN_CHATROOM: ";
-	private static final String CHAT_IDENTIFIER = "CHAT: ";
-	private static final String LEAVE_CHATROOM_IDENTIFIER = "LEAVE_CHATROOM: ";
-	private static final String JOIN_ID_IDENTIFIER = "JOIN_ID: ";
-	private static final String CLIENT_NAME_IDENTIFIER = "CLIENT_NAME: ";
 
 	public static ThreadPoolExecutor threadPoolExecutor;
 	public static AtomicInteger nextClientId;
@@ -77,72 +65,9 @@ public class ChatroomServer {
 		Socket clientSocket = serverSocket.accept();
 		clientSocket.setKeepAlive(true);
 		clientSocket.setTcpNoDelay(true);
-		System.out.println(String.format("%s>> Connection received from %s...", getCurrentDateTime(),
-				clientSocket.getInetAddress().toString()));
-
-		List<String> message = getFullMessageFromClient(clientSocket);
-		if (message != null) {
-			ClientRequest clientRequest = requestedAction(message);
-			ClientNode clientNode = extractClientInfo(clientSocket, clientRequest, message);
-			ClientThread thread = new ClientThread(clientNode, clientRequest, message);
-			thread.start();
-			// threadPoolExecutor.submitTask(clientNode, clientRequest,
-			// message);
-		} else {
-			outputServiceErrorMessageToConsole("Supplied request body was empty: cannot process request");
-		}
-	}
-
-	public static List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
-		BufferedInputStream inputStream = new BufferedInputStream(clientSocket.getInputStream());
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		int result = inputStream.read();
-		while ((result != -1) && (inputStream.available() > 0)) {
-			outputStream.write((byte) result);
-			result = inputStream.read();
-		}
-		// Assuming UTF-8 encoding
-		String inFromClient = outputStream.toString("UTF-8");
-		List<String> lines = getRequestStringAsArrayList(inFromClient);
-
-		return lines;
-	}
-
-	private static List<String> getRequestStringAsArrayList(String inFromClient) {
-		String[] linesArray = inFromClient.split("\n");
-		List<String> lines = new ArrayList<String>();
-		for (String line : linesArray) {
-			lines.add(line);
-		}
-		return lines;
-	}
-
-	public static ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType, List<String> message)
-			throws IOException {
-		switch (requestType) {
-		case JOIN_CHATROOM:
-			return new ClientNode(clientSocket, message.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					message.get(0).split(JOIN_CHATROOM_IDENTIFIER, 0)[1], nextClientId.getAndIncrement());
-		case CHAT:
-			return new ClientNode(clientSocket, message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					message.get(0).split(CHAT_IDENTIFIER, 0)[1],
-					Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]));
-		case LEAVE_CHATROOM:
-			return new ClientNode(clientSocket, message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					message.get(0).split(LEAVE_CHATROOM_IDENTIFIER, 0)[1],
-					Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]));
-		case DISCONNECT:
-			return new ClientNode(clientSocket, message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null,
-					UNDEFINED_JOIN_ID);
-		case HELO:
-			printServerMessageToConsole("Helo client node created");
-			return new ClientNode(clientSocket, null, null, UNDEFINED_JOIN_ID);
-		case KILL_SERVICE:
-			return new ClientNode(null, null, null, UNDEFINED_JOIN_ID);
-		default:
-			printServerMessageToConsole("Null clientnode created: no match with expected request types");
-			return null;
-		}
+		printServerMessageToConsole(
+				String.format("Connection received from %s...", clientSocket.getInetAddress().toString()));
+		threadPoolExecutor.submitTask(clientSocket);
 	}
 
 	public static synchronized void shutdown() {
@@ -182,31 +107,6 @@ public class ChatroomServer {
 		}
 		// If we have left the chatroom, we want to keep the record that we were
 		// in that chatroom (for repeated LEAVE requests)
-	}
-
-	public static ClientRequest requestedAction(List<String> message) throws IOException {
-		String requestType = parseClientRequestType(message);
-		try {
-			ClientRequest clientRequest = ClientRequest.valueOf(requestType);
-			printServerMessageToConsole("The parsed request type is " + clientRequest.getValue());
-			return clientRequest;
-		} catch (Exception e) {
-			outputServiceErrorMessageToConsole("Error occurred trying to fetch the request type");
-			return null;
-		}
-	}
-
-	private static String parseClientRequestType(List<String> message) throws IOException {
-		printServerMessageToConsole("In parseClientRequestType method");
-		String[] requestType = message.get(0).split(SPLIT_CRITERIA, 0);
-		if (requestType[0].contains("HELO")) {
-			String temp = requestType[0];
-			String[] splitString = temp.split(" ", 0);
-			requestType[0] = splitString[0];
-		}
-		printServerMessageToConsole(String.format("Parsed request type '%s", requestType[0]));
-
-		return requestType[0];
 	}
 
 	public static void addClientRecordToServer(ClientNode clientNode) {

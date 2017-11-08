@@ -1,6 +1,6 @@
 package main.java;
 
-import java.util.List;
+import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -32,10 +32,10 @@ public class ThreadPoolExecutor {
 		}
 	}
 
-	public void submitTask(ClientNode clientNode, ClientRequest clientRequest, List<String> message) throws Exception {
+	public void submitTask(Socket clientSocket) throws Exception {
 		try {
-			ClientThread thread = new ClientThread(clientNode, clientRequest, message);
-			this.threadPool.execute(thread);
+			ClientThread thread = new ClientThread(clientSocket);
+			this.threadPool.submit(thread);
 			ChatroomServer.printServerMessageToConsole("Submitted thread to threadpool");
 		} catch (Exception e) {
 			ChatroomServer
