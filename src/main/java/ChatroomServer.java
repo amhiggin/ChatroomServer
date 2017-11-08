@@ -82,7 +82,9 @@ public class ChatroomServer {
 		List<String> message = getFullMessageFromClient(clientSocket);
 		ClientRequest clientRequest = requestedAction(message);
 		ClientNode clientNode = extractClientInfo(clientSocket, clientRequest, message);
-		threadPoolExecutor.submitTask(clientNode, clientRequest, message);
+		ClientThread thread = new ClientThread(clientNode, clientRequest, message);
+		thread.start();
+		// threadPoolExecutor.submitTask(clientNode, clientRequest, message);
 		// ClientThread newClientConnectionThread = new ClientThread(client,
 		// clientRequest, message);
 		//
