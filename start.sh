@@ -9,4 +9,5 @@
 
 echo "Starting up chatroom server on port $1"
 
-java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=12345 -cp lib/*:src main.java.ChatroomServer $1 
+java -cp lib/*:src main.java.ChatroomServer $1 
+#java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=23456 -cp lib/*:src main.java.ChatroomServer $1 

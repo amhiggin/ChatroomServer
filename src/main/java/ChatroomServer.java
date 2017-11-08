@@ -11,7 +11,6 @@ import org.joda.time.LocalDateTime;
 
 public class ChatroomServer {
 
-	public static ThreadPoolExecutor threadPoolExecutor;
 	public static AtomicInteger nextClientId;
 	public static AtomicInteger nextChatroomId;
 	private static ServerSocket serverSocket;
@@ -27,7 +26,10 @@ public class ChatroomServer {
 	public static void main(String[] args) {
 		try {
 			initialiseServer(args[0]);
-			while (running) {
+			while (true) {
+				if (running == false) {
+					shutdown();
+				}
 				handleIncomingConnection();
 			}
 		} catch (Exception e) {
@@ -38,7 +40,6 @@ public class ChatroomServer {
 	}
 
 	public static void initialiseServer(String portSpecified) throws Exception {
-		threadPoolExecutor = new ThreadPoolExecutor();
 		serverPort = Integer.parseInt(portSpecified);
 		serverSocket = new ServerSocket(serverPort);
 		serverIP = InetAddress.getLocalHost().getHostAddress().toString();
@@ -65,17 +66,19 @@ public class ChatroomServer {
 		clientSocket.setTcpNoDelay(true);
 		printServerMessageToConsole(
 				String.format("Connection received from %s...", clientSocket.getInetAddress().toString()));
-		threadPoolExecutor.submitTask(clientSocket);
+		ClientTask task = new ClientTask(clientSocket);
+		Thread thread = new Thread(task);
+		thread.start();
 	}
 
 	public static synchronized void shutdown() {
 		try {
 			printServerMessageToConsole("Server shutting down...");
-			threadPoolExecutor.shutdown();
 			for (ClientNode node : getAllConnectedClients()) {
 				node.getConnection().close();
 			}
 			getActiveChatRooms().clear();
+			getAllConnectedClients().clear();
 			serverSocket.close();
 			printServerMessageToConsole("Server shut down successfully. Goodbye.");
 		} catch (Exception e) {
