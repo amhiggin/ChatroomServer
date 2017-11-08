@@ -9,7 +9,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.joda.time.LocalDateTime;
@@ -28,7 +27,7 @@ public class ChatroomServer {
 	public static AtomicInteger nextClientId;
 	public static AtomicInteger nextChatroomId;
 	private static ServerSocket serverSocket;
-	private static AtomicBoolean terminateServer;
+	private static boolean running;
 	private static ConcurrentSkipListSet<Chatroom> activeChatRooms;
 	private static ConcurrentSkipListSet<ClientNode> connectedClients;
 	static int serverPort;
@@ -40,13 +39,13 @@ public class ChatroomServer {
 	public static void main(String[] args) {
 		try {
 			initialiseServer(args[0]);
-			try {
-				while (terminateServer.get() != true) {
+			while (running) {
+				try {
 					handleIncomingConnection();
 					printMessageToConsole("in loop");
+				} catch (Exception e) {
+					outputServiceErrorMessageToConsole(e.getMessage());
 				}
-			} catch (Exception e) {
-				outputServiceErrorMessageToConsole(e.getMessage());
 			}
 		} catch (Exception e) {
 			outputServiceErrorMessageToConsole(e.getMessage());
@@ -72,7 +71,7 @@ public class ChatroomServer {
 	private static void initialiseServerManagementVariables() {
 		connectedClients = new ConcurrentSkipListSet<ClientNode>();
 		activeChatRooms = new ConcurrentSkipListSet<Chatroom>();
-		terminateServer = new AtomicBoolean(Boolean.FALSE);
+		running = true;
 		nextClientId = new AtomicInteger(0);
 		nextChatroomId = new AtomicInteger(0);
 	}
@@ -245,8 +244,8 @@ public class ChatroomServer {
 		return connectedClients;
 	}
 
-	public static void setTerminateServer(AtomicBoolean value) {
-		terminateServer = value;
+	public static void setRunning(boolean value) {
+		running = value;
 	}
 
 	public static void outputRequestErrorMessageToConsole(String errorResponse, ClientNode clientNode) {
