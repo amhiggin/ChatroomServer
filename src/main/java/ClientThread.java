@@ -15,7 +15,7 @@ import org.joda.time.LocalDateTime;
  * Enables handling multiple requests and responses in parallel.
  */
 
-public class ClientThread extends Thread {
+public class ClientThread implements Runnable {
 
 	private static final int KILL_REQUEST_TIMEOUT_MILLIS = 10000;
 	private static final String SPLIT_PATTERN = ": ";
@@ -92,8 +92,6 @@ public class ClientThread extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace(); // TODO @Amber remove later
 			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
-		} finally {
-			this.interrupt();
 		}
 	}
 
@@ -102,9 +100,9 @@ public class ClientThread extends Thread {
 				String.format("Client %s requested to kill service", this.clientNode.getName()));
 		ChatroomServer.setRunning(false);
 		try {
-			// Assume after 10 seconds the request must have succeeded
-			sleep(KILL_REQUEST_TIMEOUT_MILLIS);
+			wait(10000);
 		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (!ChatroomServer.getServerSocket().isClosed()) {
@@ -178,7 +176,7 @@ public class ClientThread extends Thread {
 	}
 
 	private void printThreadMessageToConsole(String message) {
-		System.out.println(String.format("%s>> THREAD%s: %s", getCurrentDateTime(), this.getId(), message));
+		System.out.println(String.format("%s>> THREAD: %s", getCurrentDateTime(), message));
 
 	}
 

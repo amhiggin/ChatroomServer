@@ -67,7 +67,9 @@ public class ChatroomServer {
 		clientSocket.setTcpNoDelay(true);
 		printServerMessageToConsole(
 				String.format("Connection received from %s...", clientSocket.getInetAddress().toString()));
-		threadPoolExecutor.submitTask(clientSocket);
+		ClientThread clientThread = new ClientThread(clientSocket);
+		Thread thread = new Thread(clientThread);
+		thread.start();
 	}
 
 	public static synchronized void shutdown() {
