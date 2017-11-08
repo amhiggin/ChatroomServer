@@ -1,6 +1,7 @@
 package main.java;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 /*
@@ -17,10 +18,17 @@ public class ClientThread extends Thread {
 	private ClientNode clientNode;
 	private ClientRequest requestType;
 	private List<String> receivedFromClient;
+	private OutputStream clientOutputStream;
 
 	public ClientThread(ClientNode client, ClientRequest requestType, List<String> receivedFromClient) {
 		ChatroomServer.printMessageToConsole("spawning new client thread...");
 		this.clientNode = client;
+		try {
+			this.clientOutputStream = this.clientNode.getConnection().getOutputStream();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		this.requestType = requestType;
 		this.receivedFromClient = receivedFromClient;
 		ChatroomServer.printMessageToConsole("Done spawning new thread");
@@ -228,9 +236,8 @@ public class ClientThread extends Thread {
 	private void writeResponseToClient(String response) {
 		ChatroomServer.printMessageToConsole(String.format("Writing response to client: %s", response));
 		try {
-			this.clientNode.getConnection().getOutputStream().write(response.getBytes());
-			// TODO check this
-			this.clientNode.getConnection().getOutputStream().flush();
+			clientOutputStream.write(response.getBytes());
+			clientOutputStream.flush();
 			ChatroomServer.printMessageToConsole("Response sent to client successfully");
 		} catch (Exception e) {
 			e.printStackTrace();

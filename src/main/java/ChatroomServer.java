@@ -81,17 +81,13 @@ public class ChatroomServer {
 				clientSocket.getInetAddress().toString()));
 
 		List<String> message = getFullMessageFromClient(clientSocket);
-		ClientRequest clientRequest = requestedAction(message);
-		ClientNode clientNode = extractClientInfo(clientSocket, clientRequest, message);
-		ClientThread thread = new ClientThread(clientNode, clientRequest, message);
-		thread.start();
-		clientSocket.getOutputStream().flush();
-		// threadPoolExecutor.submitTask(clientNode, clientRequest, message);
-		// ClientThread newClientConnectionThread = new ClientThread(client,
-		// clientRequest, message);
-		//
-		// ChatroomServer.printMessageToConsole("Running thread...");
-		// newClientConnectionThread.run();
+		if (message != null) {
+			ClientRequest clientRequest = requestedAction(message);
+			ClientNode clientNode = extractClientInfo(clientSocket, clientRequest, message);
+			threadPoolExecutor.submitTask(clientNode, clientRequest, message);
+		} else {
+			outputServiceErrorMessageToConsole("Supplied request body was empty: cannot process request");
+		}
 	}
 
 	public static List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
