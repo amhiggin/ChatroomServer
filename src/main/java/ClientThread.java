@@ -128,6 +128,7 @@ public class ClientThread extends Thread {
 							this.clientNode.getChatroomId(), ChatroomServer.serverIP, ChatroomServer.serverPort,
 							requestedChatroom.getChatroomRef(), this.clientNode.getJoinId());
 					writeResponseToClient(responseToClient);
+					return;
 					// requestedChatroom.broadcastMessageInChatroom(
 					// String.format("%s has joined this chatroom",
 					// clientNode.getName()));
