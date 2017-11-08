@@ -164,16 +164,20 @@ public class ChatroomServer {
 	static synchronized void recordClientChangeWithServer(ClientRequest requestedAction, ClientNode clientNode)
 			throws Exception {
 		if (clientNode != null) {
+			printMessageToConsole("In recordClientChangeWithServer method - client node isn't null");
 			if (requestedAction.equals(ClientRequest.JOIN_CHATROOM) && !getAllConnectedClients().contains(clientNode)
 					&& (retrieveRequestedChatroomIfExists(clientNode.getChatroomId()) != null)) {
 				addClientRecordToServer(clientNode);
 				printMessageToConsole("Successfully added new client node to server");
+				return;
 			} else if (requestedAction.equals(ClientRequest.DISCONNECT)
 					&& getAllConnectedClients().contains(clientNode)) {
 				removeClientRecordFromServer(clientNode, retrieveRequestedChatroomIfExists(clientNode.getChatroomId()));
 				printMessageToConsole("Successfully removed client node from server");
+				return;
 			}
 		}
+		printMessageToConsole("Finished executing recordClientChangeWithServer method - client node was null");
 		// If we have left the chatroom, we want to keep the record that we were
 		// in that chatroom (for repeated LEAVE requests)
 	}
@@ -206,6 +210,9 @@ public class ChatroomServer {
 	public static void addClientRecordToServer(ClientNode clientNode) {
 		if (!getAllConnectedClients().contains(clientNode)) {
 			getAllConnectedClients().add(clientNode);
+			printMessageToConsole("Added client record to server");
+		} else {
+			printMessageToConsole("client record not added to server");
 		}
 	}
 
