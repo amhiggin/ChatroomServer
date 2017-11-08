@@ -84,6 +84,7 @@ public class ChatroomServer {
 		ClientNode clientNode = extractClientInfo(clientSocket, clientRequest, message);
 		ClientThread thread = new ClientThread(clientNode, clientRequest, message);
 		thread.start();
+		clientSocket.getOutputStream().flush();
 		// threadPoolExecutor.submitTask(clientNode, clientRequest, message);
 		// ClientThread newClientConnectionThread = new ClientThread(client,
 		// clientRequest, message);
@@ -175,8 +176,9 @@ public class ChatroomServer {
 				printMessageToConsole("Successfully removed client node from server");
 				return;
 			}
+		} else {
+			printMessageToConsole("Finished executing recordClientChangeWithServer method - client node was null");
 		}
-		printMessageToConsole("Finished executing recordClientChangeWithServer method - client node was null");
 		// If we have left the chatroom, we want to keep the record that we were
 		// in that chatroom (for repeated LEAVE requests)
 	}
