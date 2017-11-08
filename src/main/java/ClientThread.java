@@ -35,11 +35,13 @@ public class ClientThread extends Thread {
 				return;
 			}
 			if (this.clientNode == null) {
-				throw new ClientNodeUndefinedException("Null client node");
+				ChatroomServer.outputServiceErrorMessageToConsole("Null client node");
+				return;
 			}
 			switch (this.requestType) {
 			case JOIN_CHATROOM:
 				joinChatroom();
+				ChatroomServer.outputServiceErrorMessageToConsole("Going to execute break now");
 				break;
 			case HELO:
 				sayHello();
@@ -60,8 +62,10 @@ public class ClientThread extends Thread {
 				handleRequestProcessingError(Error.InvalidRequest);
 				return;
 			}
+			ChatroomServer.printMessageToConsole("Exited the switch statement");
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
 			ChatroomServer.printMessageToConsole("Finished running thread");
+			return;
 		} catch (Exception e) {
 			e.printStackTrace(); // TODO @Amber remove later
 			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
@@ -142,6 +146,7 @@ public class ClientThread extends Thread {
 			e.printStackTrace();
 			handleRequestProcessingError(Error.JoinChatroom);
 		}
+		ChatroomServer.printMessageToConsole("Finished in join method");
 	}
 
 	private void writeJoinResponseToClient(Chatroom requestedChatroom) {
