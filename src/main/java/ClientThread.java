@@ -89,12 +89,12 @@ public class ClientThread extends Thread {
 			printThreadMessageToConsole("Exited the switch statement");
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
 			printThreadMessageToConsole("Finished running thread");
-			return;
 		} catch (Exception e) {
 			e.printStackTrace(); // TODO @Amber remove later
 			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
+		} finally {
+			this.interrupt();
 		}
-		this.interrupt();
 	}
 
 	private void killService() {
