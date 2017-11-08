@@ -3,6 +3,7 @@ package main.java;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /*
@@ -36,7 +37,8 @@ public class ThreadPoolExecutor {
 		try {
 			ClientTask task = new ClientTask(clientSocket);
 			Thread thread = new Thread(task);
-			this.threadPool.submit(thread);
+			Future<?> submit = this.threadPool.submit(thread);
+			ChatroomServer.printServerMessageToConsole("Future value is: " + submit.isDone());
 			ChatroomServer.printServerMessageToConsole("Submitted thread to threadpool");
 		} catch (Exception e) {
 			ChatroomServer

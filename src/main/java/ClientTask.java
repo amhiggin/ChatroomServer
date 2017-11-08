@@ -180,8 +180,7 @@ public class ClientTask implements Runnable {
 		writeResponseToClient(responseToClient);
 
 		// Broadcast message in chatroom
-		String clientJoinedChatroomMessage = String.format("%s has joined this chatroom\n\n",
-				this.clientNode.getName());
+		String clientJoinedChatroomMessage = String.format("%s has joined this chatroom", this.clientNode.getName());
 		String chatMessage = String.format(ServerResponse.CHAT.getValue(), requestedChatroom.getChatroomRef(),
 				this.clientNode.getName(), clientJoinedChatroomMessage);
 		requestedChatroom.broadcastMessageInChatroom(chatMessage);
@@ -200,7 +199,7 @@ public class ClientTask implements Runnable {
 			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), existingChatroom.getChatroomRef(),
 					this.clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
-			String clientLeftChatroomMessage = String.format("%s has left this chatroom\n\n", clientNode.getName());
+			String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
 			// must create chat message
 			String chatMessage = String.format(ServerResponse.CHAT.getValue(), existingChatroom.getChatroomRef(),
 					this.clientNode.getName(), clientLeftChatroomMessage);
