@@ -28,9 +28,7 @@ public class ChatroomServer {
 		try {
 			initialiseServer(args[0]);
 			while (running) {
-				printServerMessageToConsole("before loop");
 				handleIncomingConnection();
-				printServerMessageToConsole("after loop");
 			}
 		} catch (Exception e) {
 			outputServiceErrorMessageToConsole(e.getMessage());
@@ -67,9 +65,7 @@ public class ChatroomServer {
 		clientSocket.setTcpNoDelay(true);
 		printServerMessageToConsole(
 				String.format("Connection received from %s...", clientSocket.getInetAddress().toString()));
-		ClientThread clientThread = new ClientThread(clientSocket);
-		Thread thread = new Thread(clientThread);
-		thread.start();
+		threadPoolExecutor.submitTask(clientSocket);
 	}
 
 	public static synchronized void shutdown() {
