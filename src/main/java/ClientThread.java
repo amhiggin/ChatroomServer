@@ -175,7 +175,7 @@ public class ClientThread extends Thread {
 
 		// Broadcast message in chatroom
 		String clientJoinedChatroomMessage = String.format("%s has joined this chatroom", this.clientNode.getName());
-		String chatMessage = String.format(ServerResponse.CHAT.getValue(), requestedChatroom.getChatroomId(),
+		String chatMessage = String.format(ServerResponse.CHAT.getValue(), requestedChatroom.getChatroomRef(),
 				this.clientNode.getJoinId(), this.clientNode.getName(), clientJoinedChatroomMessage);
 		requestedChatroom.broadcastMessageInChatroom(chatMessage);
 	}
@@ -200,7 +200,7 @@ public class ClientThread extends Thread {
 			writeResponseToClient(responseToClient);
 			String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
 			// must create chat message
-			String chatMessage = String.format(ServerResponse.CHAT.getValue(), existingChatroom.getChatroomId(),
+			String chatMessage = String.format(ServerResponse.CHAT.getValue(), existingChatroom.getChatroomRef(),
 					this.clientNode.getJoinId(), this.clientNode.getName(), clientLeftChatroomMessage);
 			existingChatroom.broadcastMessageInChatroom(chatMessage);
 		} catch (Exception e) {
