@@ -27,7 +27,7 @@ public class ChatroomServer {
 	public static AtomicInteger nextClientId;
 	public static AtomicInteger nextChatroomId;
 	private static ServerSocket serverSocket;
-	private static boolean running;
+	private static volatile boolean running;
 	private static ConcurrentSkipListSet<Chatroom> activeChatRooms;
 	private static ConcurrentSkipListSet<ClientNode> connectedClients;
 	static int serverPort;
@@ -84,7 +84,10 @@ public class ChatroomServer {
 		if (message != null) {
 			ClientRequest clientRequest = requestedAction(message);
 			ClientNode clientNode = extractClientInfo(clientSocket, clientRequest, message);
-			threadPoolExecutor.submitTask(clientNode, clientRequest, message);
+			ClientThread thread = new ClientThread(clientNode, clientRequest, message);
+			thread.start();
+			// threadPoolExecutor.submitTask(clientNode, clientRequest,
+			// message);
 		} else {
 			outputServiceErrorMessageToConsole("Supplied request body was empty: cannot process request");
 		}
