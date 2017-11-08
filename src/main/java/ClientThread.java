@@ -1,8 +1,10 @@
 package main.java;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.List;
+
+import org.joda.time.LocalDateTime;
 
 /*
  * Thread which is created for every new client interaction.
@@ -18,25 +20,25 @@ public class ClientThread extends Thread {
 	private ClientNode clientNode;
 	private ClientRequest requestType;
 	private List<String> receivedFromClient;
-	private OutputStream clientOutputStream;
+	private OutputStreamWriter clientOutputStreamWriter;
 
 	public ClientThread(ClientNode client, ClientRequest requestType, List<String> receivedFromClient) {
-		ChatroomServer.printMessageToConsole("spawning new client thread...");
+		printThreadMessageToConsole("spawning new client thread...");
 		this.clientNode = client;
 		try {
-			this.clientOutputStream = this.clientNode.getConnection().getOutputStream();
+			this.clientOutputStreamWriter = new OutputStreamWriter(this.clientNode.getConnection().getOutputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		this.requestType = requestType;
 		this.receivedFromClient = receivedFromClient;
-		ChatroomServer.printMessageToConsole("Done spawning new thread");
+		printThreadMessageToConsole("Done spawning new thread");
 	}
 
 	@Override
 	public void run() {
-		ChatroomServer.printMessageToConsole("In run method");
+		printThreadMessageToConsole("In run method");
 		try {
 			if (this.requestType == null) {
 				handleRequestProcessingError(Error.InvalidRequest);
@@ -49,7 +51,7 @@ public class ClientThread extends Thread {
 			switch (this.requestType) {
 			case JOIN_CHATROOM:
 				joinChatroom();
-				ChatroomServer.printMessageToConsole("Going to execute break now");
+				printThreadMessageToConsole("Going to execute break now");
 				break;
 			case HELO:
 				sayHello();
@@ -70,9 +72,9 @@ public class ClientThread extends Thread {
 				handleRequestProcessingError(Error.InvalidRequest);
 				return;
 			}
-			ChatroomServer.printMessageToConsole("Exited the switch statement");
+			printThreadMessageToConsole("Exited the switch statement");
 			ChatroomServer.recordClientChangeWithServer(this.requestType, this.clientNode);
-			ChatroomServer.printMessageToConsole("Finished running thread");
+			printThreadMessageToConsole("Finished running thread");
 			return;
 		} catch (Exception e) {
 			e.printStackTrace(); // TODO @Amber remove later
@@ -82,7 +84,7 @@ public class ClientThread extends Thread {
 
 	private void killService() {
 		ChatroomServer
-				.printMessageToConsole(String.format("Client %s requested to kill service", this.clientNode.getName()));
+				.printServerMessageToConsole(String.format("Client %s requested to kill service", this.clientNode.getName()));
 		ChatroomServer.setRunning(false);
 		try {
 			// Assume after 10 seconds the request must have succeeded
@@ -106,17 +108,17 @@ public class ClientThread extends Thread {
 					+ ". Exception thrown: " + e.getMessage();
 			e.printStackTrace();
 		}
-		ChatroomServer.printMessageToConsole(errorResponse);
+		printThreadMessageToConsole(errorResponse);
 	}
 
 	private Chatroom createChatroom() {
 		Chatroom chatroom = new Chatroom(clientNode.getChatroomId(), ChatroomServer.nextChatroomId);
-		ChatroomServer.printMessageToConsole(String.format("Created new chatroom %s", chatroom.getChatroomId()));
+		printThreadMessageToConsole(String.format("Created new chatroom %s", chatroom.getChatroomId()));
 		return chatroom;
 	}
 
 	private void joinChatroom() {
-		ChatroomServer.printMessageToConsole(String.format("Client %s joining chatroom %s", this.clientNode.getName(),
+		printThreadMessageToConsole(String.format("Client %s joining chatroom %s", this.clientNode.getName(),
 				this.clientNode.getChatroomId()));
 		try {
 			String requestedChatroomToJoin = this.clientNode.getChatroomId();
@@ -126,35 +128,43 @@ public class ClientThread extends Thread {
 			}
 
 			if (requestedChatroom != null) {
-				ChatroomServer.printMessageToConsole(String.format("Chatroom %s already exists.. Will add client %s",
+				printThreadMessageToConsole(String.format("Chatroom %s already exists.. Will add client %s",
 						requestedChatroom.getChatroomId(), this.clientNode.getName()));
 				try {
 					requestedChatroom.addNewClientToChatroom(clientNode);
 				} catch (Exception e) {
 					e.printStackTrace();
-					ChatroomServer.printMessageToConsole(
-							String.format("%s was already a member of %s - resending JOIN response", this.clientNode,
-									requestedChatroom.getChatroomId()));
+					printThreadMessageToConsole(String.format("%s was already a member of %s - resending JOIN response",
+							this.clientNode, requestedChatroom.getChatroomId()));
 					writeJoinResponseToClient(requestedChatroom);
 					// TODO add in the broadcast again later
 					return;
 				}
 			} else {
 				requestedChatroom = createChatroom();
-				ChatroomServer.printMessageToConsole(
-						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
+				printThreadMessageToConsole(String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
 				// update server records
 				requestedChatroom.addNewClientToChatroom(clientNode);
 				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
 			}
-			ChatroomServer.printMessageToConsole(
-					String.format("Sending join response to client %s", this.clientNode.getName()));
+			printThreadMessageToConsole(String.format("Sending join response to client %s", this.clientNode.getName()));
 			writeJoinResponseToClient(requestedChatroom);
 		} catch (Exception e) {
 			e.printStackTrace();
 			handleRequestProcessingError(Error.JoinChatroom);
 		}
-		ChatroomServer.printMessageToConsole("Finished in join method");
+		printThreadMessageToConsole("Finished in join method");
+
+	}
+
+	private static String getCurrentDateTime() {
+		LocalDateTime now = new LocalDateTime();
+		return now.toString();
+	}
+
+	private void printThreadMessageToConsole(String message) {
+		System.out.println(String.format("%s>> THREAD%s: %s", getCurrentDateTime(), this.getId(), message));
+
 	}
 
 	private void writeJoinResponseToClient(Chatroom requestedChatroom) {
@@ -170,7 +180,7 @@ public class ClientThread extends Thread {
 		 * server on join] CLIENT_NAME: [string Handle to identifier client
 		 * user]
 		 */
-		ChatroomServer.printMessageToConsole(String.format("Client %s leaving chatroom %s", this.clientNode.getName(),
+		printThreadMessageToConsole(String.format("Client %s leaving chatroom %s", this.clientNode.getName(),
 				this.clientNode.getChatroomId()));
 		String requestedChatroomToLeave = this.clientNode.getChatroomId();
 		Chatroom existingChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToLeave);
@@ -191,7 +201,7 @@ public class ClientThread extends Thread {
 	}
 
 	private void sayHello() {
-		ChatroomServer.printMessageToConsole("Going to say hello!");
+		printThreadMessageToConsole("Going to say hello!");
 		try {
 			String response = constructHelloResponse(this.receivedFromClient);
 			writeResponseToClient(response);
@@ -219,29 +229,28 @@ public class ClientThread extends Thread {
 			chatroomAlreadyOnRecord.broadcastMessageInChatroom(responseToClient);
 			return;
 		}
-		ChatroomServer.printMessageToConsole(String.format("Client %s chatting in chatroom %s",
-				this.clientNode.getName(), this.clientNode.getChatroomId()));
+		printThreadMessageToConsole(String.format("Client %s chatting in chatroom %s", this.clientNode.getName(),
+				this.clientNode.getChatroomId()));
 
 		handleRequestProcessingError(Error.Chat);
 	}
 
 	private void disconnectFromServer() throws Exception {
-		ChatroomServer.printMessageToConsole(
-				String.format("Client %s disconnecting from server ", this.clientNode.getName()));
+		printThreadMessageToConsole(String.format("Client %s disconnecting from server ", this.clientNode.getName()));
 		String requestedChatroom = this.clientNode.getChatroomId();
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroom);
 		chatroomAlreadyOnRecord.removeClientNode(clientNode);
 	}
 
 	private void writeResponseToClient(String response) {
-		ChatroomServer.printMessageToConsole(String.format("Writing response to client: %s", response));
+		printThreadMessageToConsole(String.format("Writing response to client: %s", response));
 		try {
-			clientOutputStream.write(response.getBytes());
-			clientOutputStream.flush();
-			ChatroomServer.printMessageToConsole("Response sent to client successfully");
+			clientOutputStreamWriter.write(response);
+			clientOutputStreamWriter.flush();
+			printThreadMessageToConsole("Response sent to client successfully");
 		} catch (Exception e) {
 			e.printStackTrace();
-			ChatroomServer.printMessageToConsole("Failed to write response to client: " + response);
+			printThreadMessageToConsole("Failed to write response to client: " + response);
 		}
 	}
 }

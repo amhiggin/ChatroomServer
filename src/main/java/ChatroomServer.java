@@ -40,9 +40,9 @@ public class ChatroomServer {
 		try {
 			initialiseServer(args[0]);
 			while (running) {
-				printMessageToConsole("before loop");
+				printServerMessageToConsole("before loop");
 				handleIncomingConnection();
-				printMessageToConsole("after loop");
+				printServerMessageToConsole("after loop");
 			}
 		} catch (Exception e) {
 			outputServiceErrorMessageToConsole(e.getMessage());
@@ -57,7 +57,7 @@ public class ChatroomServer {
 		serverSocket = new ServerSocket(serverPort);
 		serverIP = InetAddress.getLocalHost().getHostAddress().toString();
 		initialiseServerManagementVariables();
-		System.out.println(String.format("%s>> Server started on port %s...", getCurrentDateTime(), portSpecified));
+		printServerMessageToConsole(String.format("Server started on port %s...", portSpecified));
 	}
 
 	private static String getCurrentDateTime() {
@@ -132,49 +132,50 @@ public class ChatroomServer {
 			return new ClientNode(clientSocket, message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null,
 					UNDEFINED_JOIN_ID);
 		case HELO:
-			printMessageToConsole("Helo client node created");
+			printServerMessageToConsole("Helo client node created");
 			return new ClientNode(clientSocket, null, null, UNDEFINED_JOIN_ID);
 		case KILL_SERVICE:
 			return new ClientNode(null, null, null, UNDEFINED_JOIN_ID);
 		default:
-			printMessageToConsole("Null clientnode created");
+			printServerMessageToConsole("Null clientnode created: no match with expected request types");
 			return null;
 		}
 	}
 
 	public static synchronized void shutdown() {
 		try {
-			System.out.println(String.format("%s>> Server shutting down...", getCurrentDateTime()));
+			printServerMessageToConsole("Server shutting down...");
 			threadPoolExecutor.shutdown();
 			for (ClientNode node : getAllConnectedClients()) {
 				node.getConnection().close();
 			}
 			getActiveChatRooms().clear();
 			serverSocket.close();
-			System.out.println(String.format("%s>> Server shut down successfully. Goodbye.", getCurrentDateTime()));
+			printServerMessageToConsole("Server shut down successfully. Goodbye.");
 		} catch (Exception e) {
-			System.out.println(String.format("%s>> Error occurred when trying to shut down the server: %s",
-					getCurrentDateTime(), e));
+			outputServiceErrorMessageToConsole(
+					String.format("Error occurred when trying to shut down the server: %s", e.getStackTrace()));
 		}
 	}
 
 	static synchronized void recordClientChangeWithServer(ClientRequest requestedAction, ClientNode clientNode)
 			throws Exception {
 		if (clientNode != null) {
-			printMessageToConsole("In recordClientChangeWithServer method - client node isn't null");
+			printServerMessageToConsole("In recordClientChangeWithServer method - client node isn't null");
 			if (requestedAction.equals(ClientRequest.JOIN_CHATROOM) && !getAllConnectedClients().contains(clientNode)
 					&& (retrieveRequestedChatroomIfExists(clientNode.getChatroomId()) != null)) {
 				addClientRecordToServer(clientNode);
-				printMessageToConsole("Successfully added new client node to server");
+				printServerMessageToConsole("Successfully added new client node to server");
 				return;
 			} else if (requestedAction.equals(ClientRequest.DISCONNECT)
 					&& getAllConnectedClients().contains(clientNode)) {
 				removeClientRecordFromServer(clientNode, retrieveRequestedChatroomIfExists(clientNode.getChatroomId()));
-				printMessageToConsole("Successfully removed client node from server");
+				printServerMessageToConsole("Successfully removed client node from server");
 				return;
 			}
 		} else {
-			printMessageToConsole("Finished executing recordClientChangeWithServer method - client node was null");
+			printServerMessageToConsole(
+					"Finished executing recordClientChangeWithServer method - client node was null");
 		}
 		// If we have left the chatroom, we want to keep the record that we were
 		// in that chatroom (for repeated LEAVE requests)
@@ -184,7 +185,7 @@ public class ChatroomServer {
 		String requestType = parseClientRequestType(message);
 		try {
 			ClientRequest clientRequest = ClientRequest.valueOf(requestType);
-			printMessageToConsole("The parsed request type is " + clientRequest.getValue());
+			printServerMessageToConsole("The parsed request type is " + clientRequest.getValue());
 			return clientRequest;
 		} catch (Exception e) {
 			outputServiceErrorMessageToConsole("Error occurred trying to fetch the request type");
@@ -193,14 +194,14 @@ public class ChatroomServer {
 	}
 
 	private static String parseClientRequestType(List<String> message) throws IOException {
-		printMessageToConsole("In parseClientRequestType method");
+		printServerMessageToConsole("In parseClientRequestType method");
 		String[] requestType = message.get(0).split(SPLIT_CRITERIA, 0);
 		if (requestType[0].contains("HELO")) {
 			String temp = requestType[0];
 			String[] splitString = temp.split(" ", 0);
 			requestType[0] = splitString[0];
 		}
-		printMessageToConsole(String.format("Parsed request type '%s", requestType[0]));
+		printServerMessageToConsole(String.format("Parsed request type '%s", requestType[0]));
 
 		return requestType[0];
 	}
@@ -208,9 +209,9 @@ public class ChatroomServer {
 	public static void addClientRecordToServer(ClientNode clientNode) {
 		if (!getAllConnectedClients().contains(clientNode)) {
 			getAllConnectedClients().add(clientNode);
-			printMessageToConsole("Added client record to server");
+			printServerMessageToConsole("Added client record to server");
 		} else {
-			printMessageToConsole("client record not added to server");
+			printServerMessageToConsole("client record not added to server");
 		}
 	}
 
@@ -254,13 +255,13 @@ public class ChatroomServer {
 	}
 
 	public static void outputRequestErrorMessageToConsole(String errorResponse, ClientNode clientNode) {
-		String output = String.format("%s>> Error processing request (client %s): %s", getCurrentDateTime(),
+		String output = String.format("%s>> SERVER: Error processing request (client %s): %s", getCurrentDateTime(),
 				clientNode.getName(), errorResponse);
 		System.out.println(output);
 	}
 
 	public static void outputServiceErrorMessageToConsole(String errorMessage) {
-		String output = String.format("%s>> Service error: %s", getCurrentDateTime(), errorMessage);
+		String output = String.format("%s>> SERVER: Service error: %s", getCurrentDateTime(), errorMessage);
 		System.out.println(output);
 	}
 
@@ -268,8 +269,8 @@ public class ChatroomServer {
 		return serverSocket;
 	}
 
-	public static void printMessageToConsole(String message) {
-		System.out.println(String.format("%s>> %s", getCurrentDateTime(), message));
+	public static void printServerMessageToConsole(String message) {
+		System.out.println(String.format("%s>> SERVER: %s", getCurrentDateTime(), message));
 
 	}
 

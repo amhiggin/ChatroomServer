@@ -17,7 +17,7 @@ public class Chatroom implements Comparable<Chatroom> {
 	}
 
 	public void removeClientNode(ClientNode node) {
-		ChatroomServer.printMessageToConsole(
+		ChatroomServer.printServerMessageToConsole(
 				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomId));
 		if (this.listOfConnectedClients.contains(node)) {
 			this.listOfConnectedClients.remove(node);
@@ -25,7 +25,7 @@ public class Chatroom implements Comparable<Chatroom> {
 	}
 
 	public void addNewClientToChatroom(ClientNode node) throws Exception {
-		ChatroomServer.printMessageToConsole(
+		ChatroomServer.printServerMessageToConsole(
 				String.format("Adding new node %s to chatroom %s", node.getName(), this.chatroomId));
 		if (!listOfConnectedClients.contains(node)) {
 			listOfConnectedClients.add(node);
@@ -38,19 +38,19 @@ public class Chatroom implements Comparable<Chatroom> {
 	// client to leave chatroom
 	public synchronized void broadcastMessageInChatroom(String message) {
 		ChatroomServer
-				.printMessageToConsole("Will broadcast message to all clients in chatroom as follows: " + message);
+				.printServerMessageToConsole("Will broadcast message to all clients in chatroom as follows: " + message);
 		for (ClientNode client : listOfConnectedClients) {
 			if (client != null) {
 				try {
 					PrintStream socketPrintStream = new PrintStream(client.getConnection().getOutputStream());
 					socketPrintStream.print(message);
-					ChatroomServer.printMessageToConsole("Broadcasted to client " + client.getName());
+					ChatroomServer.printServerMessageToConsole("Broadcasted to client " + client.getName());
 				} catch (Exception e) {
-					ChatroomServer.printMessageToConsole("Failed to broadcast to client " + client.getName());
+					ChatroomServer.printServerMessageToConsole("Failed to broadcast to client " + client.getName());
 				}
 			}
 		}
-		ChatroomServer.printMessageToConsole("Finished broadcast in chatroom" + getChatroomId());
+		ChatroomServer.printServerMessageToConsole("Finished broadcast in chatroom" + getChatroomId());
 	}
 
 	@Override
