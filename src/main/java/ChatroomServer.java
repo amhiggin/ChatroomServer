@@ -24,6 +24,7 @@ public class ChatroomServer {
 	private static final String JOIN_ID_IDENTIFIER = "JOIN_ID: ";
 	private static final String CLIENT_NAME_IDENTIFIER = "CLIENT_NAME: ";
 
+	public static ThreadPoolExecutor threadPoolExecutor;
 	public static AtomicInteger nextClientId;
 	public static AtomicInteger nextChatroomId;
 	private static ServerSocket serverSocket;
@@ -39,7 +40,7 @@ public class ChatroomServer {
 	public static void main(String[] args) {
 		try {
 			initialiseServer(args[0]);
-			while (!terminateServer.equals(Boolean.TRUE)) {
+			while (terminateServer.equals(Boolean.FALSE)) {
 				try {
 					handleIncomingConnection();
 					printMessageToConsole("in loop");
@@ -55,6 +56,7 @@ public class ChatroomServer {
 	}
 
 	public static void initialiseServer(String portSpecified) throws Exception {
+		threadPoolExecutor = new ThreadPoolExecutor();
 		serverPort = Integer.parseInt(portSpecified);
 		serverSocket = new ServerSocket(serverPort);
 		serverIP = InetAddress.getLocalHost().getHostAddress().toString();
@@ -83,11 +85,13 @@ public class ChatroomServer {
 
 		List<String> message = getFullMessageFromClient(clientSocket);
 		ClientRequest clientRequest = requestedAction(message);
-		ClientNode client = extractClientInfo(clientSocket, clientRequest, message);
-		ClientThread newClientConnectionThread = new ClientThread(client, clientRequest, message);
-
-		ChatroomServer.printMessageToConsole("Running thread...");
-		newClientConnectionThread.run();
+		ClientNode clientNode = extractClientInfo(clientSocket, clientRequest, message);
+		threadPoolExecutor.submitTask(clientNode, clientRequest, message);
+		// ClientThread newClientConnectionThread = new ClientThread(client,
+		// clientRequest, message);
+		//
+		// ChatroomServer.printMessageToConsole("Running thread...");
+		// newClientConnectionThread.run();
 	}
 
 	public static synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
@@ -145,6 +149,7 @@ public class ChatroomServer {
 	public static void shutdown() {
 		try {
 			System.out.println(String.format("%s>> Server shutting down...", getCurrentDateTime()));
+			threadPoolExecutor.shutdown();
 			for (ClientNode node : getAllConnectedClients()) {
 				node.getConnection().close();
 			}
