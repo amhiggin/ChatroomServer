@@ -5,7 +5,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ public class ClientThread extends Thread {
 	private static final String CLIENT_NAME_IDENTIFIER = "CLIENT_NAME: ";
 	public static final String STUDENT_ID = "13327954";
 
-	private OutputStreamWriter clientOutputStreamWriter;
 	PrintWriter socketOutputStream = null;
 	BufferedReader socketInputStream = null;
 	private Socket socket;
@@ -259,8 +257,8 @@ public class ClientThread extends Thread {
 	private void writeResponseToClient(String response) {
 		printThreadMessageToConsole(String.format("Writing response to client: %s", response));
 		try {
-			clientOutputStreamWriter.write(response);
-			clientOutputStreamWriter.flush();
+			this.socketOutputStream.write(response);
+			this.socketOutputStream.flush();
 			printThreadMessageToConsole("Response sent to client successfully");
 		} catch (Exception e) {
 			e.printStackTrace();
