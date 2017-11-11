@@ -210,23 +210,26 @@ public class ClientThread extends Thread {
 			Chatroom existingChatroom = ChatroomServer
 					.retrieveRequestedChatroomByRoomRefIfExists(requestedChatroomToLeave);
 
-			// Now remove from chatroom and send a leave message if appropriate
 			if (existingChatroom != null) {
 				if (existingChatroom.getListOfConnectedClients().contains(this.socket)) {
 					String responseToClient = String.format(ServerResponse.LEAVE.getValue(),
 							existingChatroom.getChatroomRef(), clientNode.getJoinId());
 					writeResponseToClient(responseToClient);
-					existingChatroom.removeClientNode(socket, clientNode);
+				}
+				// Secondly, send message in chatroom about client leaving
+				String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
+				String chatMessage = String.format(ServerResponse.CHAT.getValue(), existingChatroom.getChatroomRef(),
+						clientNode.getName(), clientLeftChatroomMessage);
+
+				existingChatroom.broadcastMessageInChatroom(chatMessage);
+				if (existingChatroom.getListOfConnectedClients().contains(this.socket)) {
+					existingChatroom.removeClientRecord(socket, clientNode);
 				}
 			}
-			// Secondly, send message in chatroom about client leaving
-			String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
-			String chatMessage = String.format(ServerResponse.CHAT.getValue(), existingChatroom.getChatroomRef(),
-					clientNode.getName(), clientLeftChatroomMessage);
 
-			existingChatroom.broadcastMessageInChatroom(chatMessage);
+		} catch (
 
-		} catch (Exception e) {
+		Exception e) {
 			e.printStackTrace();
 			handleRequestProcessingError(Error.LeaveChatroom, clientNode);
 		}
@@ -271,7 +274,7 @@ public class ClientThread extends Thread {
 		printThreadMessageToConsole(String.format("Client %s disconnecting from server ", clientNode.getName()));
 		String requestedChatroom = chatroomRequested;
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer.retrieveRequestedChatroomByRoomRefIfExists(requestedChatroom);
-		chatroomAlreadyOnRecord.removeClientNode(this.socket, clientNode);
+		chatroomAlreadyOnRecord.removeClientRecord(this.socket, clientNode);
 	}
 
 	private void writeResponseToClient(String response) {

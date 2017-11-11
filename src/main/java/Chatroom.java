@@ -19,7 +19,7 @@ public class Chatroom implements Comparable<Chatroom> {
 		this.chatroomRef = chatroomRef;
 	}
 
-	public void removeClientNode(Socket clientSocket, ClientRequestNode node) throws Exception {
+	public void removeClientRecord(Socket clientSocket, ClientRequestNode node) throws Exception {
 		printChatroomMessageToConsole(
 				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomRef));
 		for (Socket socket : listOfConnectedClients) {
