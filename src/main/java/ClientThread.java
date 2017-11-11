@@ -169,7 +169,6 @@ public class ClientThread extends Thread {
 						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
 				// update server records
 				requestedChatroom.addNewClientToChatroom(this.socket, clientNode);
-				this.joinedChatrooms.add(requestedChatroom);
 				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
 			}
 			printThreadMessageToConsole(String.format("Sending join response to client %s", clientNode.getName()));
