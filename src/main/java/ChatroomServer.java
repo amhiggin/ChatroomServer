@@ -153,7 +153,7 @@ public class ChatroomServer {
 
 	public static Chatroom retrieveRequestedChatroomIfExists(String requestedChatroomToJoin) {
 		for (Chatroom chatroom : activeChatRooms) {
-			if (chatroom.getChatroomId() == requestedChatroomToJoin) {
+			if (chatroom.getChatroomRef() == Integer.parseInt(requestedChatroomToJoin)) {
 				return chatroom;
 			}
 		}
