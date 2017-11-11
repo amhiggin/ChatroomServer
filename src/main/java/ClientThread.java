@@ -61,7 +61,11 @@ public class ClientThread extends Thread {
 				List<String> receivedFromClient = getFullMessageFromClient(this.socket);
 				ClientRequest requestType = requestedAction(receivedFromClient);
 				ClientNode clientNode = extractClientInfo(this.socket, requestType, receivedFromClient);
-
+				if (clientNode == null) {
+					ChatroomServer
+							.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
+					return;
+				}
 				dealWithRequestAsAppropriate(receivedFromClient, clientNode, requestType);
 			} catch (Exception e) {
 				ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
@@ -322,6 +326,8 @@ public class ClientThread extends Thread {
 			return new ClientNode(null, null, UNDEFINED_JOIN_ID, message);
 		case KILL_SERVICE:
 			return new ClientNode(null, null, null, message);
+		case NULL:
+			return null;
 		default:
 			printThreadMessageToConsole("Null clientnode created: no match with expected request types");
 			return null;
