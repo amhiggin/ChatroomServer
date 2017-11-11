@@ -164,11 +164,11 @@ public class ClientThread extends Thread {
 					return;
 				}
 			} else {
-				requestedChatroom = createChatroom(clientNode, chatroomRequested);
+				requestedChatroom = createChatroom(chatroomRequested);
 				printThreadMessageToConsole(
 						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
+				requestedChatroom.addNewClientToChatroom(this.socket, this.socketOutputStream, clientNode);
 				// update server records
-				requestedChatroom.addNewClientToChatroom(this.socket, clientNode);
 				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
 			}
 			printThreadMessageToConsole(String.format("Sending join response to client %s", clientNode.getName()));
@@ -181,7 +181,7 @@ public class ClientThread extends Thread {
 
 	}
 
-	private Chatroom createChatroom(ClientRequestNode clientNode, String chatroomRequested) {
+	private Chatroom createChatroom(String chatroomRequested) {
 		Chatroom chatroom = new Chatroom(chatroomRequested, ChatroomServer.nextChatroomId.getAndIncrement());
 		printThreadMessageToConsole(String.format("Created new chatroom %s", chatroom.getChatroomId()));
 		return chatroom;
@@ -226,10 +226,7 @@ public class ClientThread extends Thread {
 					existingChatroom.removeClientRecord(socket, clientNode);
 				}
 			}
-
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			handleRequestProcessingError(Error.LeaveChatroom, clientNode);
 		}
