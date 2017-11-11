@@ -16,7 +16,7 @@ public class ChatroomServer {
 	private static ServerSocket serverSocket;
 	private static volatile boolean running;
 	private static ConcurrentSkipListSet<Chatroom> activeChatRooms;
-	private static ConcurrentSkipListSet<ClientNode> connectedClients;
+	private static ConcurrentSkipListSet<Socket> connectedClients;
 	static int serverPort;
 	static String serverIP;
 
@@ -53,7 +53,7 @@ public class ChatroomServer {
 	}
 
 	private static void initialiseServerManagementVariables() {
-		connectedClients = new ConcurrentSkipListSet<ClientNode>();
+		connectedClients = new ConcurrentSkipListSet<Socket>();
 		activeChatRooms = new ConcurrentSkipListSet<Chatroom>();
 		running = true;
 		nextClientId = new AtomicInteger(0);
@@ -66,16 +66,15 @@ public class ChatroomServer {
 		clientSocket.setTcpNoDelay(true);
 		printServerMessageToConsole(
 				String.format("Connection received from %s...", clientSocket.getInetAddress().toString()));
-		ClientTask task = new ClientTask(clientSocket);
-		Thread thread = new Thread(task);
+		ClientThread thread = new ClientThread(clientSocket);
 		thread.start();
 	}
 
 	public static synchronized void shutdown() {
 		try {
 			printServerMessageToConsole("Server shutting down...");
-			for (ClientNode node : getAllConnectedClients()) {
-				node.getConnection().close();
+			for (Socket socket : getAllConnectedClients()) {
+				socket.close();
 			}
 			getActiveChatRooms().clear();
 			getAllConnectedClients().clear();
@@ -111,11 +110,11 @@ public class ChatroomServer {
 	}
 
 	public static void addClientRecordToServer(ClientNode clientNode) {
-		if (!getAllConnectedClients().contains(clientNode)) {
-			getAllConnectedClients().add(clientNode);
-			printServerMessageToConsole("Added client record to server");
+		if (!getAllConnectedClients().contains(clientNode.getConnection())) {
+			getAllConnectedClients().add(clientNode.getConnection());
+			printServerMessageToConsole("Added client socket to server");
 		} else {
-			printServerMessageToConsole("client record not added to server");
+			printServerMessageToConsole("client socket not added to server records");
 		}
 	}
 
@@ -150,7 +149,7 @@ public class ChatroomServer {
 		return serverPort;
 	}
 
-	public static synchronized ConcurrentSkipListSet<ClientNode> getAllConnectedClients() {
+	public static synchronized ConcurrentSkipListSet<Socket> getAllConnectedClients() {
 		return connectedClients;
 	}
 
