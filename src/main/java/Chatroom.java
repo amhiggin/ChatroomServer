@@ -43,9 +43,6 @@ public class Chatroom implements Comparable<Chatroom> {
 		listOfConnectedClients.put(clientSocket, socketOutputStream);
 	}
 
-	// CHAT(
-	// "CHAT: %s\n" + "JOIN_ID: %s\n" + "CLIENT_NAME: %s\n" + "MESSAGE:
-	// %s\n\n"),
 	public synchronized void broadcastMessageInChatroom(String message) {
 		printChatroomMessageToConsole("Will broadcast message to all clients in chatroom as follows: " + message);
 

@@ -151,12 +151,17 @@ public class ChatroomServer {
 		return activeChatRooms;
 	}
 
-	public static Chatroom retrieveRequestedChatroomIfExists(String requestedChatroomToJoin) {
+	public static synchronized Chatroom retrieveRequestedChatroomIfExists(String requestedChatroomToJoin) {
 		for (Chatroom chatroom : activeChatRooms) {
-			if ((chatroom.getChatroomId() == requestedChatroomToJoin)) {
+			// TODO @Amber verify the next bit of logic
+			if ((chatroom.getChatroomId().contains(requestedChatroomToJoin))) {
+				printServerMessageToConsole(
+						String.format("Chatroom %s found in server records", requestedChatroomToJoin));
 				return chatroom;
 			}
 		}
+		printServerMessageToConsole(
+				String.format("Couldn't find chatroom %s in server records", requestedChatroomToJoin));
 		return null;
 	}
 

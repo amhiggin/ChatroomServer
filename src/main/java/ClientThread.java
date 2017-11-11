@@ -33,8 +33,7 @@ public class ClientThread extends Thread {
 	BufferedReader socketInputStream = null;
 	private Socket socket;
 	List<Chatroom> joinedChatrooms = null;
-	private int joinId;
-	private String clientName = null;
+	private int joinId = -1;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
@@ -146,11 +145,22 @@ public class ClientThread extends Thread {
 		try {
 			String requestedChatroomToJoin = chatroomRequested;
 			Chatroom requestedChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToJoin);
-			if (clientNode.getJoinId() == null) {
-				clientNode.setJoinId(ChatroomServer.nextClientId.getAndIncrement());
+			if (this.joinId == -1) {
+				int newJoinId = ChatroomServer.nextClientId.getAndIncrement();
+				this.joinId = newJoinId;
+				clientNode.setJoinId(newJoinId);
 			}
 
-			if (requestedChatroom != null) {
+			if (requestedChatroom == null) {
+				// FIXME: Have to be able to check whether the chatroom already
+				// exists
+				requestedChatroom = createChatroom(chatroomRequested);
+				printThreadMessageToConsole(
+						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
+				requestedChatroom.addNewClientToChatroom(this.socket, clientNode, this.socketOutputStream);
+				// update server records
+				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
+			} else {
 				printThreadMessageToConsole(String.format("Chatroom %s already exists.. Will add client %s",
 						requestedChatroom.getChatroomId(), clientNode.getName()));
 				try {
@@ -163,13 +173,6 @@ public class ClientThread extends Thread {
 					writeJoinResponseToClientAndBroadcastMessageInChatroom(requestedChatroom, clientNode);
 					return;
 				}
-			} else {
-				requestedChatroom = createChatroom(chatroomRequested);
-				printThreadMessageToConsole(
-						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
-				requestedChatroom.addNewClientToChatroom(this.socket, clientNode, this.socketOutputStream);
-				// update server records
-				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
 			}
 			printThreadMessageToConsole(String.format("Sending join response to client %s", clientNode.getName()));
 			writeJoinResponseToClientAndBroadcastMessageInChatroom(requestedChatroom, clientNode);
