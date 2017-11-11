@@ -209,30 +209,27 @@ public class ClientThread extends Thread {
 			String requestedChatroomToLeave = chatroomRequested;
 			Chatroom existingChatroom = ChatroomServer
 					.retrieveRequestedChatroomByRoomRefIfExists(requestedChatroomToLeave);
-			if (existingChatroom != null) {
-				// NOTE: don't need to remove client from server records
-				existingChatroom.removeClientNode(socket, clientNode);
-			}
 
-			writeLeaveResponseToClientAndBroadcastMessageInChatroom(existingChatroom, clientNode);
+			// First, send message in chatroom about client leaving
+			String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
+			String chatMessage = String.format(ServerResponse.CHAT.getValue(), existingChatroom.getChatroomRef(),
+					clientNode.getName(), clientLeftChatroomMessage);
+			existingChatroom.broadcastMessageInChatroom(chatMessage);
+
+			// Now remove from chatroom and send a leave message if appropriate
+			if (existingChatroom != null) {
+				if (existingChatroom.getListOfConnectedClients().contains(clientNode)) {
+					String responseToClient = String.format(ServerResponse.LEAVE.getValue(),
+							existingChatroom.getChatroomRef(), clientNode.getJoinId());
+					writeResponseToClient(responseToClient);
+					existingChatroom.removeClientNode(socket, clientNode);
+				}
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			handleRequestProcessingError(Error.LeaveChatroom, clientNode);
 		}
-	}
-
-	private void writeLeaveResponseToClientAndBroadcastMessageInChatroom(Chatroom requestedChatroom,
-			ClientRequestNode clientNode) {
-		// NOTE: client must receive message before removed from chatroom
-		String responseToClient = String.format(ServerResponse.LEAVE.getValue(), requestedChatroom.getChatroomRef(),
-				clientNode.getJoinId());
-
-		String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
-		String chatMessage = String.format(ServerResponse.CHAT.getValue(), requestedChatroom.getChatroomRef(),
-				clientNode.getName(), clientLeftChatroomMessage);
-		requestedChatroom.broadcastMessageInChatroom(chatMessage);
-		writeResponseToClient(responseToClient);
 	}
 
 	private void sayHello(ClientRequestNode clientNode, List<String> receivedFromClient) {
