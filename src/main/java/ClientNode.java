@@ -1,48 +1,32 @@
 package main.java;
 
-import java.net.Socket;
-import java.net.SocketException;
+import java.util.List;
 
 /*
- * An object for storing the info about a client connection.
- * Assumed that a client may only be a member of 1 chatroom at a time.
- * 
+ * An object for storing the temporary info about a client request.
  */
 
 public class ClientNode implements Comparable<ClientNode> {
 
-	private Socket connection;
 	private String clientName;
-	private String chatroomId;
 	private Integer joinId;
+	private String chatroomId;
+	private List<String> receivedFromClient;
+	// requestType?
+	// message received?
 
-	public ClientNode(Socket connection, String clientName, String chatroomId, Integer joinId) {
-		setConnection(connection);
+	public ClientNode(String clientName, String chatroomId, Integer joinId, List<String> receivedFromClient) {
 		this.clientName = clientName;
-		this.chatroomId = chatroomId;
 		this.joinId = joinId;
-	}
-
-	private void setConnection(Socket connection) {
-		this.connection = connection;
-		try {
-			this.connection.setKeepAlive(true);
-			this.connection.setTcpNoDelay(true);
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
+		this.setChatroomId(chatroomId);
 	}
 
 	public String getName() {
 		return this.clientName;
 	}
 
-	public Socket getConnection() {
-		return this.connection;
-	}
-
-	public String getChatroomId() {
-		return this.chatroomId;
+	public List<String> getReceivedFromClient() {
+		return this.receivedFromClient;
 	}
 
 	public Integer getJoinId() {
@@ -51,6 +35,14 @@ public class ClientNode implements Comparable<ClientNode> {
 
 	public void setJoinId(Integer joinId) {
 		this.joinId = joinId;
+	}
+
+	public String getChatroomId() {
+		return chatroomId;
+	}
+
+	public void setChatroomId(String chatroomId) {
+		this.chatroomId = chatroomId;
 	}
 
 	@Override
@@ -67,9 +59,7 @@ public class ClientNode implements Comparable<ClientNode> {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(String.format("Client name: %s\n", this.getName()));
-		builder.append(String.format("ChatroomId: %s\n", this.getChatroomId()));
 		builder.append(String.format("JoinId: %s\n", this.getJoinId()));
 		return builder.toString();
 	}
-
 }
