@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,11 +63,20 @@ public class ChatroomServer {
 	}
 
 	private static void handleIncomingConnection() throws Exception {
+		Socket clientSocket = acceptAndMaintainSocketConnection();
+		runClientThread(clientSocket);
+	}
+
+	private static Socket acceptAndMaintainSocketConnection() throws IOException, SocketException {
 		Socket clientSocket = serverSocket.accept();
 		clientSocket.setKeepAlive(true);
 		clientSocket.setTcpNoDelay(true);
 		printServerMessageToConsole(
 				String.format("Connection received from %s...", clientSocket.getInetAddress().toString()));
+		return clientSocket;
+	}
+
+	private static void runClientThread(Socket clientSocket) {
 		ClientThread thread = new ClientThread(clientSocket);
 		thread.start();
 	}
@@ -87,19 +97,21 @@ public class ChatroomServer {
 		}
 	}
 
-	static synchronized void recordClientChangeWithServer(ClientRequest requestedAction, ClientNode clientNode)
-			throws Exception {
+	static synchronized void recordClientChangeWithServer(ClientRequest requestedAction, Socket clientSocket,
+			ClientNode clientNode) throws Exception {
 		if (clientNode != null) {
 			printServerMessageToConsole("In recordClientChangeWithServer method - client node isn't null");
-			if (requestedAction.equals(ClientRequest.JOIN_CHATROOM) && !getAllConnectedClients().contains(clientNode)
+
+			if (requestedAction.equals(ClientRequest.JOIN_CHATROOM) && !getAllConnectedClients().contains(clientSocket)
 					&& (retrieveRequestedChatroomIfExists(clientNode.getChatroomId()) != null)) {
-				addClientRecordToServer(clientNode);
-				printServerMessageToConsole("Successfully added new client node to server");
+				addClientRecordToServer(clientSocket);
+				printServerMessageToConsole("Successfully added new client record to server");
 				return;
 			} else if (requestedAction.equals(ClientRequest.DISCONNECT)
-					&& getAllConnectedClients().contains(clientNode)) {
-				removeClientRecordFromServer(clientNode, retrieveRequestedChatroomIfExists(clientNode.getChatroomId()));
-				printServerMessageToConsole("Successfully removed client node from server");
+					&& getAllConnectedClients().contains(clientSocket)) {
+				removeClientRecordFromServer(clientSocket,
+						retrieveRequestedChatroomIfExists(clientNode.getChatroomId()));
+				printServerMessageToConsole("Successfully removed client record from server");
 				return;
 			}
 		} else {
@@ -110,28 +122,28 @@ public class ChatroomServer {
 		// in that chatroom (for repeated LEAVE requests)
 	}
 
-	public static void addClientRecordToServer(ClientNode clientNode) {
+	public static void addClientRecordToServer(Socket clientSocket) {
 		for (Socket socket : connectedClients) {
-			if (clientNode.getConnection() == socket) {
-				printServerMessageToConsole("client socket not added to server records");
+			if (clientSocket == socket) {
+				printServerMessageToConsole("client socket not added to server records: already existed");
 				return;
 			}
 		}
-		getAllConnectedClients().add(clientNode.getConnection());
+		getAllConnectedClients().add(clientSocket);
 		printServerMessageToConsole("Added client socket to server");
 	}
 
-	private static void removeClientRecordFromServer(ClientNode clientNode, Chatroom requestedChatroom)
+	private static void removeClientRecordFromServer(Socket clientSocket, Chatroom requestedChatroom)
 			throws IOException {
 		// Note this involves removing from chatroom too
 		for (Chatroom chatroom : getActiveChatRooms()) {
 			if (chatroom == requestedChatroom) {
-				chatroom.getListOfConnectedClients().remove(clientNode);
+				chatroom.getListOfConnectedClients().remove(clientSocket);
 				break;
 			}
 		}
-		connectedClients.remove(clientNode);
-		clientNode.getConnection().close();
+		connectedClients.remove(clientSocket);
+		clientSocket.close();
 		return;
 	}
 
