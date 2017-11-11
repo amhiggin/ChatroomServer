@@ -57,7 +57,7 @@ public class Chatroom implements Comparable<Chatroom> {
 					record.getValue().flush();
 				} catch (Exception e) {
 					printChatroomMessageToConsole(
-							"Failed to broadcast to client at socket " + socket.getInetAddress().toString());
+							"Failed to broadcast to client at socket " + record.getKey().getInetAddress().toString());
 				}
 			}
 		}

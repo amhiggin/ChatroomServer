@@ -154,7 +154,7 @@ public class ClientThread extends Thread {
 				printThreadMessageToConsole(String.format("Chatroom %s already exists.. Will add client %s",
 						requestedChatroom.getChatroomId(), clientNode.getName()));
 				try {
-					requestedChatroom.addNewClientToChatroom(this.socket, clientNode);
+					requestedChatroom.addNewClientToChatroom(this.socket, clientNode, this.socketOutputStream);
 					this.joinedChatrooms.add(requestedChatroom);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -167,7 +167,7 @@ public class ClientThread extends Thread {
 				requestedChatroom = createChatroom(chatroomRequested);
 				printThreadMessageToConsole(
 						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
-				requestedChatroom.addNewClientToChatroom(this.socket, this.socketOutputStream, clientNode);
+				requestedChatroom.addNewClientToChatroom(this.socket, clientNode, this.socketOutputStream);
 				// update server records
 				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
 			}
@@ -211,7 +211,7 @@ public class ClientThread extends Thread {
 					.retrieveRequestedChatroomByRoomRefIfExists(requestedChatroomToLeave);
 
 			if (existingChatroom != null) {
-				if (existingChatroom.getListOfConnectedClients().contains(this.socket)) {
+				if (existingChatroom.getListOfConnectedClients().containsKey(this.socket)) {
 					String responseToClient = String.format(ServerResponse.LEAVE.getValue(),
 							existingChatroom.getChatroomRef(), clientNode.getJoinId());
 					writeResponseToClient(responseToClient);
@@ -222,7 +222,7 @@ public class ClientThread extends Thread {
 						clientNode.getName(), clientLeftChatroomMessage);
 
 				existingChatroom.broadcastMessageInChatroom(chatMessage);
-				if (existingChatroom.getListOfConnectedClients().contains(this.socket)) {
+				if (existingChatroom.getListOfConnectedClients().containsKey(this.socket)) {
 					existingChatroom.removeClientRecord(socket, clientNode);
 				}
 			}
