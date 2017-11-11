@@ -1,37 +1,44 @@
 package main.java;
 
 import java.io.PrintStream;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.joda.time.LocalDateTime;
 
 public class Chatroom implements Comparable<Chatroom> {
 
-	private ConcurrentSkipListSet<ClientNode> listOfConnectedClients;
+	private List<Socket> listOfConnectedClients;
 	private String chatroomId;
 	private Integer chatroomRef;
 
 	public Chatroom(String id, AtomicInteger chatroomRef) {
 		chatroomId = id;
-		this.listOfConnectedClients = new ConcurrentSkipListSet<ClientNode>();
+		this.listOfConnectedClients = new ArrayList<Socket>();
 		this.chatroomRef = Integer.valueOf(chatroomRef.intValue());
 	}
 
-	public void removeClientNode(ClientNode node) {
+	public void removeClientNode(ClientNode node) throws Exception {
 		printChatroomMessageToConsole(String.format("Removing node %s from chatroom %s", node.getName(), chatroomId));
-		if (this.listOfConnectedClients.contains(node)) {
-			this.listOfConnectedClients.remove(node);
+		for (Socket socket : listOfConnectedClients) {
+			if (socket == node.getConnection()) {
+				this.listOfConnectedClients.remove(node);
+				return;
+			}
 		}
+		throw new Exception("Client " + node.getName() + " was not part of chatroom " + this.chatroomId);
 	}
 
 	public void addNewClientToChatroom(ClientNode node) throws Exception {
 		printChatroomMessageToConsole(String.format("Adding new node %s to chatroom %s", node.getName(), chatroomId));
-		if (!listOfConnectedClients.contains(node)) {
-			listOfConnectedClients.add(node);
-			return;
+		for (Socket socket : listOfConnectedClients) {
+			if (socket == node.getConnection()) {
+				return;
+			}
 		}
-		throw new Exception(String.format("Client %s already added to chatroom %s", node.getName(), chatroomId));
+		listOfConnectedClients.add(node.getConnection());
 	}
 
 	// CHAT(
@@ -40,14 +47,14 @@ public class Chatroom implements Comparable<Chatroom> {
 	public synchronized void broadcastMessageInChatroom(String message) {
 		printChatroomMessageToConsole("Will broadcast message to all clients in chatroom as follows: " + message);
 
-		for (ClientNode client : listOfConnectedClients) {
-			if (client != null) {
+		for (Socket socket : listOfConnectedClients) {
+			if (socket != null) {
 				try {
-					PrintStream socketPrintStream = new PrintStream(client.getConnection().getOutputStream());
+					PrintStream socketPrintStream = new PrintStream(socket.getOutputStream());
 					socketPrintStream.print(message);
-					printChatroomMessageToConsole("Broadcasted to client " + client.getName());
 				} catch (Exception e) {
-					printChatroomMessageToConsole("Failed to broadcast to client " + client.getName());
+					printChatroomMessageToConsole(
+							"Failed to broadcast to client at socket " + socket.getInetAddress().toString());
 				}
 			}
 		}
@@ -73,7 +80,7 @@ public class Chatroom implements Comparable<Chatroom> {
 		return 0;
 	}
 
-	public ConcurrentSkipListSet<ClientNode> getSetOfConnectedClients() {
+	public List<Socket> getListOfConnectedClients() {
 		return this.listOfConnectedClients;
 	}
 

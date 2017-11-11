@@ -127,7 +127,7 @@ public class ChatroomServer {
 		// Note this involves removing from chatroom too
 		for (Chatroom chatroom : getActiveChatRooms()) {
 			if (chatroom == requestedChatroom) {
-				chatroom.getSetOfConnectedClients().remove(clientNode);
+				chatroom.getListOfConnectedClients().remove(clientNode);
 				break;
 			}
 		}
