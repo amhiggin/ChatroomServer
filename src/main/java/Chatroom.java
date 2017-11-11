@@ -4,7 +4,6 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.joda.time.LocalDateTime;
 
@@ -14,10 +13,10 @@ public class Chatroom implements Comparable<Chatroom> {
 	private String chatroomId;
 	private Integer chatroomRef;
 
-	public Chatroom(String id, AtomicInteger chatroomRef) {
+	public Chatroom(String id, int chatroomRef) {
 		chatroomId = id;
 		this.listOfConnectedClients = new ArrayList<Socket>();
-		this.chatroomRef = Integer.valueOf(chatroomRef.intValue());
+		this.chatroomRef = chatroomRef;
 	}
 
 	public void removeClientNode(Socket clientSocket, ClientNode node) throws Exception {

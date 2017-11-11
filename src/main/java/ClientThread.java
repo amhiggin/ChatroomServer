@@ -182,7 +182,7 @@ public class ClientThread extends Thread {
 	}
 
 	private Chatroom createChatroom(ClientNode clientNode, String chatroomRequested) {
-		Chatroom chatroom = new Chatroom(chatroomRequested, ChatroomServer.nextChatroomId);
+		Chatroom chatroom = new Chatroom(chatroomRequested, ChatroomServer.nextChatroomId.getAndIncrement());
 		printThreadMessageToConsole(String.format("Created new chatroom %s", chatroom.getChatroomId()));
 		return chatroom;
 	}
