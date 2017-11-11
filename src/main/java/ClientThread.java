@@ -64,7 +64,7 @@ public class ClientThread extends Thread {
 					ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
 					return;
 				}
-				ClientNode clientNode = extractClientInfo(this.socket, requestType, receivedFromClient);
+				ClientRequestNode clientNode = extractClientInfo(this.socket, requestType, receivedFromClient);
 				if (clientNode == null) {
 					ChatroomServer
 							.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
@@ -78,7 +78,7 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private void dealWithRequestAsAppropriate(List<String> receivedFromClient, ClientNode clientNode,
+	private void dealWithRequestAsAppropriate(List<String> receivedFromClient, ClientRequestNode clientNode,
 			ClientRequest requestType) throws Exception {
 		if (clientNode == null) {
 			ChatroomServer.outputServiceErrorMessageToConsole("Null client node");
@@ -111,7 +111,7 @@ public class ClientThread extends Thread {
 
 	}
 
-	private void killService(ClientNode clientNode) {
+	private void killService(ClientRequestNode clientNode) {
 		ChatroomServer.printServerMessageToConsole(
 				String.format("Client %s requested to kill service", clientNode.getName()));
 		ChatroomServer.setRunning(false);
@@ -125,7 +125,7 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private void handleRequestProcessingError(Error errorMessage, ClientNode clientNode) {
+	private void handleRequestProcessingError(Error errorMessage, ClientRequestNode clientNode) {
 		String errorResponse = String.format(ServerResponse.ERROR.getValue(), errorMessage.getValue(),
 				errorMessage.getDescription());
 		try {
@@ -139,8 +139,8 @@ public class ClientThread extends Thread {
 		printThreadMessageToConsole(errorResponse);
 	}
 
-	private void joinChatroom(ClientNode clientNode) {
-		String chatroomRequested = clientNode.getChatroomId();
+	private void joinChatroom(ClientRequestNode clientNode) {
+		String chatroomRequested = clientNode.getChatroomRequested();
 		printThreadMessageToConsole(
 				String.format("Client %s joining chatroom %s", clientNode.getName(), chatroomRequested));
 		try {
@@ -181,14 +181,14 @@ public class ClientThread extends Thread {
 
 	}
 
-	private Chatroom createChatroom(ClientNode clientNode, String chatroomRequested) {
+	private Chatroom createChatroom(ClientRequestNode clientNode, String chatroomRequested) {
 		Chatroom chatroom = new Chatroom(chatroomRequested, ChatroomServer.nextChatroomId.getAndIncrement());
 		printThreadMessageToConsole(String.format("Created new chatroom %s", chatroom.getChatroomId()));
 		return chatroom;
 	}
 
 	private void writeJoinResponseToClientAndBroadcastMessageInChatroom(Chatroom requestedChatroom,
-			ClientNode clientNode) {
+			ClientRequestNode clientNode) {
 		String responseToClient = String.format(ServerResponse.JOIN.getValue(), requestedChatroom.getChatroomId(),
 				ChatroomServer.serverIP, ChatroomServer.serverPort, requestedChatroom.getChatroomRef(),
 				clientNode.getJoinId());
@@ -201,18 +201,19 @@ public class ClientThread extends Thread {
 		requestedChatroom.broadcastMessageInChatroom(chatMessage);
 	}
 
-	private void leaveChatroom(ClientNode clientNode) {
-		String chatroomRequested = clientNode.getChatroomId();
+	private void leaveChatroom(ClientRequestNode clientNode) {
+		String chatroomRequested = clientNode.getChatroomRequested();
 		printThreadMessageToConsole(
 				String.format("Client %s leaving chatroom %s", clientNode.getName(), chatroomRequested));
 		try {
 			String requestedChatroomToLeave = chatroomRequested;
-			Chatroom existingChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToLeave);
+			Chatroom existingChatroom = ChatroomServer
+					.retrieveRequestedChatroomByRoomRefIfExists(requestedChatroomToLeave);
 			if (existingChatroom != null) {
 				// NOTE: don't need to remove client from server records
 				existingChatroom.removeClientNode(socket, clientNode);
 			}
-			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), existingChatroom.getChatroomId(),
+			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), existingChatroom.getChatroomRef(),
 					clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
 			String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
@@ -226,7 +227,7 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private void sayHello(ClientNode clientNode, List<String> receivedFromClient) {
+	private void sayHello(ClientRequestNode clientNode, List<String> receivedFromClient) {
 		printThreadMessageToConsole("Going to say hello!");
 		try {
 			String response = constructHelloResponse(receivedFromClient);
@@ -244,9 +245,9 @@ public class ClientThread extends Thread {
 		return helloResponse;
 	}
 
-	private void chat(ClientNode clientNode) throws IOException {
+	private void chat(ClientRequestNode clientNode) throws IOException {
 		String message = clientNode.getReceivedFromClient().get(3).split(SPLIT_PATTERN, 0)[1];
-		Chatroom chatroomAlreadyOnRecord = ChatroomServer.retrieveRequestedChatroomIfExists(clientNode.getChatroomId());
+		Chatroom chatroomAlreadyOnRecord = ChatroomServer.retrieveRequestedChatroomIfExists(clientNode.getChatroomRequested());
 		if (chatroomAlreadyOnRecord != null) {
 			String responseToClient = String.format(ServerResponse.CHAT.getValue(),
 					chatroomAlreadyOnRecord.getChatroomId(), clientNode.getJoinId(), clientNode.getName(), message);
@@ -254,16 +255,16 @@ public class ClientThread extends Thread {
 			return;
 		}
 		printThreadMessageToConsole(
-				String.format("Client %s chatting in chatroom %s", clientNode.getName(), clientNode.getChatroomId()));
+				String.format("Client %s chatting in chatroom %s", clientNode.getName(), clientNode.getChatroomRequested()));
 
 		handleRequestProcessingError(Error.Chat, clientNode);
 	}
 
-	private void disconnectFromServer(ClientNode clientNode) throws Exception {
-		String chatroomRequested = clientNode.getChatroomId();
+	private void disconnectFromServer(ClientRequestNode clientNode) throws Exception {
+		String chatroomRequested = clientNode.getChatroomRequested();
 		printThreadMessageToConsole(String.format("Client %s disconnecting from server ", clientNode.getName()));
 		String requestedChatroom = chatroomRequested;
-		Chatroom chatroomAlreadyOnRecord = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroom);
+		Chatroom chatroomAlreadyOnRecord = ChatroomServer.retrieveRequestedChatroomByRoomRefIfExists(requestedChatroom);
 		chatroomAlreadyOnRecord.removeClientNode(this.socket, clientNode);
 	}
 
@@ -303,28 +304,28 @@ public class ClientThread extends Thread {
 		return lines;
 	}
 
-	public ClientNode extractClientInfo(Socket clientSocket, ClientRequest requestType, List<String> message)
+	public ClientRequestNode extractClientInfo(Socket clientSocket, ClientRequest requestType, List<String> message)
 			throws IOException {
 		switch (requestType) {
 		case JOIN_CHATROOM:
-			return new ClientNode(message.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
+			return new ClientRequestNode(message.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
 					message.get(0).split(JOIN_CHATROOM_IDENTIFIER, 0)[1], ChatroomServer.nextClientId.getAndIncrement(),
 					message);
 		case CHAT:
-			return new ClientNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
+			return new ClientRequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
 					message.get(0).split(CHAT_IDENTIFIER, 0)[1],
 					Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]), message);
 		case LEAVE_CHATROOM:
-			return new ClientNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
+			return new ClientRequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
 					message.get(0).split(LEAVE_CHATROOM_IDENTIFIER, 0)[1],
 					Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]), message);
 		case DISCONNECT:
-			return new ClientNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null, UNDEFINED_JOIN_ID, message);
+			return new ClientRequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null, UNDEFINED_JOIN_ID, message);
 		case HELO:
 			printThreadMessageToConsole("Helo client node created");
-			return new ClientNode(null, null, UNDEFINED_JOIN_ID, message);
+			return new ClientRequestNode(null, null, UNDEFINED_JOIN_ID, message);
 		case KILL_SERVICE:
-			return new ClientNode(null, null, null, message);
+			return new ClientRequestNode(null, null, null, message);
 		case NULL:
 			return null;
 		default:

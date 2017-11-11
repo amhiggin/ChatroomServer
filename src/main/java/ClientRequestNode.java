@@ -6,7 +6,7 @@ import java.util.List;
  * An object for storing the temporary info about a client request.
  */
 
-public class ClientNode implements Comparable<ClientNode> {
+public class ClientRequestNode implements Comparable<ClientRequestNode> {
 
 	private String clientName;
 	private Integer joinId;
@@ -15,7 +15,7 @@ public class ClientNode implements Comparable<ClientNode> {
 	// requestType?
 	// message received?
 
-	public ClientNode(String clientName, String chatroomId, Integer joinId, List<String> receivedFromClient) {
+	public ClientRequestNode(String clientName, String chatroomId, Integer joinId, List<String> receivedFromClient) {
 		this.clientName = clientName;
 		this.joinId = joinId;
 		this.setChatroomId(chatroomId);
@@ -37,7 +37,7 @@ public class ClientNode implements Comparable<ClientNode> {
 		this.joinId = joinId;
 	}
 
-	public String getChatroomId() {
+	public String getChatroomRequested() {
 		return chatroomId;
 	}
 
@@ -46,7 +46,7 @@ public class ClientNode implements Comparable<ClientNode> {
 	}
 
 	@Override
-	public int compareTo(ClientNode o) {
+	public int compareTo(ClientRequestNode o) {
 		if (this.getJoinId() < o.getJoinId()) {
 			return -1;
 		} else if (this.getJoinId() > o.getJoinId()) {

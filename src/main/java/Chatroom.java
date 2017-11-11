@@ -19,8 +19,9 @@ public class Chatroom implements Comparable<Chatroom> {
 		this.chatroomRef = chatroomRef;
 	}
 
-	public void removeClientNode(Socket clientSocket, ClientNode node) throws Exception {
-		printChatroomMessageToConsole(String.format("Removing node %s from chatroom %s", node.getName(), chatroomId));
+	public void removeClientNode(Socket clientSocket, ClientRequestNode node) throws Exception {
+		printChatroomMessageToConsole(
+				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomRef));
 		for (Socket socket : listOfConnectedClients) {
 			if (socket == clientSocket) {
 				this.listOfConnectedClients.remove(clientSocket);
@@ -30,7 +31,7 @@ public class Chatroom implements Comparable<Chatroom> {
 		throw new Exception("Client " + node.getName() + " was not part of chatroom " + this.chatroomId);
 	}
 
-	public void addNewClientToChatroom(Socket clientSocket, ClientNode node) throws Exception {
+	public void addNewClientToChatroom(Socket clientSocket, ClientRequestNode node) throws Exception {
 		printChatroomMessageToConsole(String.format("Adding new node %s to chatroom %s", node.getName(), chatroomId));
 		for (Socket socket : listOfConnectedClients) {
 			if (socket == clientSocket) {

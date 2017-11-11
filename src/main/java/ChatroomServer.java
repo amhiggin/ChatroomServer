@@ -98,19 +98,19 @@ public class ChatroomServer {
 	}
 
 	static synchronized void recordClientChangeWithServer(ClientRequest requestedAction, Socket clientSocket,
-			ClientNode clientNode) throws Exception {
+			ClientRequestNode clientNode) throws Exception {
 		if (clientNode != null) {
 			printServerMessageToConsole("In recordClientChangeWithServer method - client node isn't null");
 
 			if (requestedAction.equals(ClientRequest.JOIN_CHATROOM) && !getAllConnectedClients().contains(clientSocket)
-					&& (retrieveRequestedChatroomIfExists(clientNode.getChatroomId()) != null)) {
+					&& (retrieveRequestedChatroomIfExists(clientNode.getChatroomRequested()) != null)) {
 				addClientRecordToServer(clientSocket);
 				printServerMessageToConsole("Successfully added new client record to server");
 				return;
 			} else if (requestedAction.equals(ClientRequest.DISCONNECT)
 					&& getAllConnectedClients().contains(clientSocket)) {
 				removeClientRecordFromServer(clientSocket,
-						retrieveRequestedChatroomIfExists(clientNode.getChatroomId()));
+						retrieveRequestedChatroomIfExists(clientNode.getChatroomRequested()));
 				printServerMessageToConsole("Successfully removed client record from server");
 				return;
 			}
@@ -153,7 +153,16 @@ public class ChatroomServer {
 
 	public static Chatroom retrieveRequestedChatroomIfExists(String requestedChatroomToJoin) {
 		for (Chatroom chatroom : activeChatRooms) {
-			if (chatroom.getChatroomRef() == Integer.parseInt(requestedChatroomToJoin)) {
+			if ((chatroom.getChatroomId() == requestedChatroomToJoin)) {
+				return chatroom;
+			}
+		}
+		return null;
+	}
+
+	public static Chatroom retrieveRequestedChatroomByRoomRefIfExists(String requestedChatroomToLeave) {
+		for (Chatroom chatroom : activeChatRooms) {
+			if (chatroom.getChatroomRef() == Integer.parseInt(requestedChatroomToLeave)) {
 				return chatroom;
 			}
 		}
@@ -172,7 +181,7 @@ public class ChatroomServer {
 		running = value;
 	}
 
-	public static void outputRequestErrorMessageToConsole(String errorResponse, ClientNode clientNode) {
+	public static void outputRequestErrorMessageToConsole(String errorResponse, ClientRequestNode clientNode) {
 		String output = String.format("%s>> SERVER: Error processing request (client %s): %s", getCurrentDateTime(),
 				clientNode.getName(), errorResponse);
 		System.out.println(output);
