@@ -60,6 +60,10 @@ public class ClientThread extends Thread {
 			try {
 				List<String> receivedFromClient = getFullMessageFromClient(this.socket);
 				ClientRequest requestType = requestedAction(receivedFromClient);
+				if (requestType == null) {
+					ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
+					return;
+				}
 				ClientNode clientNode = extractClientInfo(this.socket, requestType, receivedFromClient);
 				if (clientNode == null) {
 					ChatroomServer
@@ -76,10 +80,6 @@ public class ClientThread extends Thread {
 
 	private void dealWithRequestAsAppropriate(List<String> receivedFromClient, ClientNode clientNode,
 			ClientRequest requestType) throws Exception {
-		if (requestType == null) {
-			handleRequestProcessingError(Error.InvalidRequest, clientNode);
-			return;
-		}
 		if (clientNode == null) {
 			ChatroomServer.outputServiceErrorMessageToConsole("Null client node");
 			return;
