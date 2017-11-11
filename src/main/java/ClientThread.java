@@ -212,7 +212,7 @@ public class ClientThread extends Thread {
 
 			// Now remove from chatroom and send a leave message if appropriate
 			if (existingChatroom != null) {
-				if (existingChatroom.getListOfConnectedClients().contains(clientNode)) {
+				if (existingChatroom.getListOfConnectedClients().contains(this.socket)) {
 					String responseToClient = String.format(ServerResponse.LEAVE.getValue(),
 							existingChatroom.getChatroomRef(), clientNode.getJoinId());
 					writeResponseToClient(responseToClient);
