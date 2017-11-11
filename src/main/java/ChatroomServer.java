@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.joda.time.LocalDateTime;
@@ -15,8 +16,8 @@ public class ChatroomServer {
 	public static AtomicInteger nextChatroomId;
 	private static ServerSocket serverSocket;
 	private static volatile boolean running;
-	private static ConcurrentSkipListSet<Chatroom> activeChatRooms;
-	private static ConcurrentSkipListSet<Socket> connectedClients;
+	private static List<Chatroom> activeChatRooms;
+	private static List<Socket> connectedClients;
 	static int serverPort;
 	static String serverIP;
 
@@ -53,8 +54,8 @@ public class ChatroomServer {
 	}
 
 	private static void initialiseServerManagementVariables() {
-		connectedClients = new ConcurrentSkipListSet<Socket>();
-		activeChatRooms = new ConcurrentSkipListSet<Chatroom>();
+		connectedClients = new ArrayList<Socket>();
+		activeChatRooms = new ArrayList<Chatroom>();
 		running = true;
 		nextClientId = new AtomicInteger(0);
 		nextChatroomId = new AtomicInteger(0);
@@ -110,11 +111,14 @@ public class ChatroomServer {
 	}
 
 	public static void addClientRecordToServer(ClientNode clientNode) {
-		if (!getAllConnectedClients().contains(clientNode.getConnection())) {
-			getAllConnectedClients().add(clientNode.getConnection());
-			printServerMessageToConsole("Added client socket to server");
-		} else {
-			printServerMessageToConsole("client socket not added to server records");
+		for (Socket socket : connectedClients) {
+			if (clientNode.getConnection() == socket) {
+				printServerMessageToConsole("client socket not added to server records");
+				return;
+			} else {
+				getAllConnectedClients().add(clientNode.getConnection());
+				printServerMessageToConsole("Added client socket to server");
+			}
 		}
 	}
 
@@ -132,7 +136,7 @@ public class ChatroomServer {
 		return;
 	}
 
-	public static ConcurrentSkipListSet<Chatroom> getActiveChatRooms() {
+	public static List<Chatroom> getActiveChatRooms() {
 		return activeChatRooms;
 	}
 
@@ -149,7 +153,7 @@ public class ChatroomServer {
 		return serverPort;
 	}
 
-	public static synchronized ConcurrentSkipListSet<Socket> getAllConnectedClients() {
+	public static synchronized List<Socket> getAllConnectedClients() {
 		return connectedClients;
 	}
 
