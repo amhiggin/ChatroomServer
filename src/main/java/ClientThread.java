@@ -165,7 +165,6 @@ public class ClientThread extends Thread {
 						requestedChatroom.getChatroomId(), clientNode.getName()));
 				try {
 					requestedChatroom.addNewClientToChatroom(this.socket, clientNode, this.socketOutputStream);
-					this.joinedChatrooms.add(requestedChatroom);
 				} catch (Exception e) {
 					e.printStackTrace();
 					printThreadMessageToConsole(String.format("%s was already a member of %s - resending JOIN response",
