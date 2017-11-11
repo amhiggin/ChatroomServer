@@ -115,11 +115,10 @@ public class ChatroomServer {
 			if (clientNode.getConnection() == socket) {
 				printServerMessageToConsole("client socket not added to server records");
 				return;
-			} else {
-				getAllConnectedClients().add(clientNode.getConnection());
-				printServerMessageToConsole("Added client socket to server");
 			}
 		}
+		getAllConnectedClients().add(clientNode.getConnection());
+		printServerMessageToConsole("Added client socket to server");
 	}
 
 	private static void removeClientRecordFromServer(ClientNode clientNode, Chatroom requestedChatroom)
