@@ -212,7 +212,7 @@ public class ClientThread extends Thread {
 				// NOTE: don't need to remove client from server records
 				existingChatroom.removeClientNode(socket, clientNode);
 			}
-			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), existingChatroom.getChatroomRef(),
+			String responseToClient = String.format(ServerResponse.LEAVE.getValue(), existingChatroom.getChatroomId(),
 					clientNode.getJoinId());
 			writeResponseToClient(responseToClient);
 			String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
