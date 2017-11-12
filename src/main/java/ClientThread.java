@@ -46,8 +46,6 @@ public class ClientThread extends Thread {
 			this.socket = clientSocket;
 			this.socketOutputStream = new PrintWriter(clientSocket.getOutputStream(), true);
 			this.socketInputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			// @Amber - the join Id should be unique to this connection: not to
-			// joining of chatroom
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
 		} catch (IOException e) {
 			e.printStackTrace();

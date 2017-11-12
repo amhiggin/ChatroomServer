@@ -72,7 +72,7 @@ public class ChatroomServer {
 		clientSocket.setKeepAlive(true);
 		clientSocket.setTcpNoDelay(true);
 		printServerMessageToConsole(
-				String.format("Connection received from %s...", clientSocket.getInetAddress().toString()));
+				String.format("**********\nConnection received from %s...", clientSocket.getInetAddress().toString()));
 		return clientSocket;
 	}
 
