@@ -1,6 +1,5 @@
 package main.java;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +17,12 @@ public class Chatroom implements Comparable<Chatroom> {
 		this.chatroomRef = chatroomRef;
 	}
 
-	public void removeClientRecord(Socket clientSocket, ClientRequestNode node) throws Exception {
+	public void removeClientRecord(ClientConnectionObject clientConnectionObject, ClientRequestNode node)
+			throws Exception {
 		printChatroomMessageToConsole(
 				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomRef));
 		for (ClientConnectionObject record : listOfConnectedClients) {
-			if (record.getSocket().equals(clientSocket)) {
+			if (record == clientConnectionObject) {
 				this.listOfConnectedClients.remove(record);
 				printChatroomMessageToConsole(
 						String.format("Removed node %s from chatroom %s", node.getName(), this.chatroomRef));

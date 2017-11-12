@@ -37,6 +37,7 @@ public class ClientThread extends Thread {
 	ClientConnectionObject connectionObject;
 	List<Chatroom> joinedChatrooms = null;
 	private int joinId;
+	boolean disconnected;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
@@ -45,6 +46,7 @@ public class ClientThread extends Thread {
 					new PrintWriter(clientSocket.getOutputStream(), true),
 					new BufferedReader(new InputStreamReader(clientSocket.getInputStream())));
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
+			this.disconnected = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -52,7 +54,7 @@ public class ClientThread extends Thread {
 
 	@Override
 	public void run() {
-		while (true) {
+		while (disconnected == false) {
 			try {
 				List<String> receivedFromClient = getFullMessageFromClient(this.connectionObject.getSocket());
 				ClientRequest requestType = requestedAction(receivedFromClient);
@@ -95,7 +97,7 @@ public class ClientThread extends Thread {
 			chat(clientNode);
 			break;
 		case DISCONNECT:
-			// Dealt with by the recordClientChangeWithServer method
+			disconnected = true;
 			break;
 		case KILL_SERVICE:
 			killService(clientNode);
@@ -225,7 +227,7 @@ public class ClientThread extends Thread {
 
 				// Thirdly, remove the client from the chatroom
 				if (clientPresentInChatroom(existingChatroom)) {
-					existingChatroom.removeClientRecord(this.connectionObject.getSocket(), clientNode);
+					existingChatroom.removeClientRecord(this.connectionObject, clientNode);
 				}
 			}
 		} catch (Exception e) {
