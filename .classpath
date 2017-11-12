@@ -5,6 +5,5 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="U:/Documents/Year 5/Scalable computing/ChatroomServer/lib/joda-time-2.9.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="U:/Documents/Year 5/Scalable computing/ChatroomServer/testlibs/mockito-all-1.10.19.jar"/>
-	<classpathentry exported="true" kind="lib" path="U:/Documents/Year 5/Scalable computing/ChatroomServer/lib/commons-io-2.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
