@@ -72,7 +72,8 @@ public class ClientThread extends Thread {
 					dealWithRequest(clientNode);
 				}
 			} catch (Exception e) {
-				if (disconnected == true) {
+				if ((disconnected == true) || (this.connectionObject.getSocket().isClosed() == true)) {
+					printThreadMessageToConsole("Caught socket exception due to disconnection");
 					return;
 				}
 				ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
