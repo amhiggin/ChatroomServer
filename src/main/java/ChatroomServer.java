@@ -133,22 +133,31 @@ public class ChatroomServer {
 
 	private static void removeClientRecordFromServerUponDisconnect(ClientConnectionObject clientConnectionObject,
 			ClientRequestNode clientNode) throws IOException {
-		// Note this involves removing from chatroom too
+		printServerMessageToConsole(
+				String.format("Will now remove the record of client %s from the server", clientNode.getName()));
 		String clientLeftChatroomMessage;
 		String chatMessage;
+
+		// First, remove the client record from the server
+		connectedClients.remove(clientConnectionObject);
+		printServerMessageToConsole(String.format("Client %s removed from the server", clientNode.getName()));
+		clientConnectionObject.getSocket().close();
+		printServerMessageToConsole(String.format("Client %s port closed. Will now remove records from all chatrooms",
+				clientNode.getName()));
 
 		for (Chatroom chatroom : getActiveChatRooms()) {
 			if (chatroom.getListOfConnectedClients().contains(clientConnectionObject)) {
 				chatroom.getListOfConnectedClients().remove(clientConnectionObject);
+				printServerMessageToConsole(String.format("Removed client %s from chatroom %s", clientNode.getName(),
+						chatroom.getChatroomId()));
 				clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
 				chatMessage = String.format(ServerResponse.CHAT.getValue(), chatroom.getChatroomRef(),
 						clientNode.getName(), clientLeftChatroomMessage);
 				chatroom.broadcastMessageInChatroom(chatMessage);
-				break;
+				printServerMessageToConsole(
+						String.format("Sent message in chatroom%s: '%s'", chatroom.getChatroomId(), chatMessage));
 			}
 		}
-		connectedClients.remove(clientConnectionObject);
-		clientConnectionObject.getSocket().close();
 		return;
 	}
 

@@ -270,12 +270,6 @@ public class ClientThread extends Thread {
 					chatroomAlreadyOnRecord.getChatroomRef(), clientNode.getName(), message);
 			chatroomAlreadyOnRecord.broadcastMessageInChatroom(responseToClient);
 			return;
-		} else {
-			printThreadMessageToConsole(String.format(
-					"Chatroom %s requested for chatting doesn't exist yet.. will need to create it\n*** BUT WON'T DO THAT YET!!!***\n",
-					clientNode.getChatroomRequested()));
-			// FIXME TODO @Amber
-			// joinChatroom(clientNode);
 		}
 		printThreadMessageToConsole(String.format("Client %s chatting in chatroom %s", clientNode.getName(),
 				clientNode.getChatroomRequested()));
