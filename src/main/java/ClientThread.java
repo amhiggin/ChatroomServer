@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +73,8 @@ public class ClientThread extends Thread {
 					dealWithRequest(clientNode);
 				}
 			} catch (Exception e) {
-				if ((disconnected == true) || (this.connectionObject.getSocket().isClosed() == true)) {
+				if ((disconnected == true) || (this.connectionObject.getSocket().isClosed() == true)
+						|| (e instanceof SocketException)) {
 					printThreadMessageToConsole("Caught socket exception due to disconnection");
 					return;
 				}
