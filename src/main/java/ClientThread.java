@@ -69,7 +69,7 @@ public class ClientThread extends Thread {
 							.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
 					return;
 				}
-				this.disconnected = dealWithRequestAsAppropriate(receivedFromClient, clientNode, requestType);
+				dealWithRequestAsAppropriate(receivedFromClient, clientNode, requestType);
 			} catch (Exception e) {
 				ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 				e.printStackTrace();
@@ -77,35 +77,35 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private synchronized boolean dealWithRequestAsAppropriate(List<String> receivedFromClient,
+	private synchronized void dealWithRequestAsAppropriate(List<String> receivedFromClient,
 			ClientRequestNode clientNode, ClientRequest requestType) throws Exception {
 		if (clientNode == null) {
 			ChatroomServer.outputServiceErrorMessageToConsole("Null client node");
-			return false;
 		}
 		switch (requestType) {
 		case JOIN_CHATROOM:
 			joinChatroom(clientNode);
 			ChatroomServer.addClientRecordToServer(this.connectionObject, clientNode);
-			return false;
+			return;
 		case HELO:
 			sayHello(clientNode, receivedFromClient);
-			return false;
+			return;
 		case LEAVE_CHATROOM:
 			leaveChatroom(clientNode);
-			return false;
+			return;
 		case CHAT:
 			chat(clientNode);
-			return false;
+			return;
 		case DISCONNECT:
 			ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
-			return true;
+			this.disconnected = true;
+			return;
 		case KILL_SERVICE:
 			killService(clientNode);
-			return false;
+			return;
 		default:
 			handleRequestProcessingError(Error.InvalidRequest, clientNode);
-			return false;
+			return;
 		}
 	}
 
