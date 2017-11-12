@@ -24,12 +24,12 @@ public class Chatroom implements Comparable<Chatroom> {
 		printChatroomMessageToConsole(
 				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomRef));
 		for (Entry<Socket, PrintWriter> record : listOfConnectedClients.entrySet()) {
-			if (record.getKey() == clientSocket) {
+			if (record.getKey().equals(clientSocket)) {
 				this.listOfConnectedClients.remove(record);
 				return;
 			}
 		}
-		throw new Exception("Client " + node.getName() + " was not part of chatroom " + this.chatroomId);
+		throw new Exception("Client " + node.getName() + " was not part of chatroom: can't remove." + this.chatroomId);
 	}
 
 	public void addNewClientToChatroom(Socket clientSocket, ClientRequestNode node, PrintWriter socketOutputStream)
