@@ -2,6 +2,7 @@ package main.java;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -9,7 +10,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.joda.time.LocalDateTime;
 
 /*
@@ -296,7 +296,14 @@ public class ClientThread extends Thread {
 
 	public List<String> getFullMessageFromClient() throws IOException {
 		BufferedInputStream inputStream = new BufferedInputStream(this.connectionObject.getSocket().getInputStream());
-		String inFromClient = IOUtils.toString(inputStream, "UTF-8");
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		int result = inputStream.read();
+		while ((result != -1) && (inputStream.available() > 0)) {
+			outputStream.write((byte) result);
+			result = inputStream.read();
+		}
+		// Assuming UTF-8 encoding
+		String inFromClient = outputStream.toString("UTF-8");
 		List<String> lines = getRequestStringAsArrayList(inFromClient);
 
 		return lines;

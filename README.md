@@ -8,7 +8,6 @@
 <i><b> Included in the /libs dir</i></b>
 * JRE 1.7.0_151
 * Joda Time 2.9.9
-* Apache Commons IO 2.6
 
 ## Test Dependencies ##
 <i><b> Included in the /testlibs dir</i></b>
