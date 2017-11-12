@@ -97,12 +97,12 @@ public class ChatroomServer {
 		}
 	}
 
-	static synchronized void recordClientChangeWithServer(ClientConnectionObject clientConnectionObject,
+	static synchronized boolean recordClientChangeWithServer(ClientConnectionObject clientConnectionObject,
 			ClientRequestNode clientNode) throws Exception {
 		if (clientNode != null) {
 			if (!clientNode.getRequestType().equals(ClientRequest.JOIN_CHATROOM)
 					|| !clientNode.getRequestType().equals(ClientRequest.DISCONNECT)) {
-				return;
+				return false;
 			}
 
 			printServerMessageToConsole(String.format("In recordClientChangeWithServer method - request type is %s",
@@ -114,17 +114,18 @@ public class ChatroomServer {
 					&& (retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested()) != null)) {
 				addClientRecordToServer(clientConnectionObject);
 				printServerMessageToConsole("Successfully added new client record to server");
-				return;
+				return false;
 			}
 			// DISCONNECT
 			else if (clientNode.getRequestType().equals(ClientRequest.DISCONNECT)
 					&& getAllConnectedClients().contains(clientConnectionObject)) {
 				removeClientRecordFromServerUponDisconnect(clientConnectionObject, clientNode);
 				printServerMessageToConsole("Successfully removed client record from server");
-				return;
+				return true;
 			}
 		}
 		printServerMessageToConsole("Finished executing recordClientChangeWithServer method - client node was null");
+		return false;
 	}
 
 	public static void addClientRecordToServer(ClientConnectionObject clientConnectionObject) {

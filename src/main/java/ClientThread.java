@@ -97,7 +97,6 @@ public class ClientThread extends Thread {
 			chat(clientNode);
 			break;
 		case DISCONNECT:
-			disconnected = true;
 			break;
 		case KILL_SERVICE:
 			killService(clientNode);
