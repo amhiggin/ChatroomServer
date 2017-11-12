@@ -1,6 +1,5 @@
 package main.java;
 
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +32,15 @@ public class Chatroom implements Comparable<Chatroom> {
 		throw new Exception("Client " + node.getName() + " was not part of chatroom: can't remove." + this.chatroomId);
 	}
 
-	public void addNewClientToChatroom(Socket clientSocket, ClientRequestNode node, PrintWriter socketOutputStream)
+	public void addNewClientToChatroom(ClientConnectionObject clientConnectionObject, ClientRequestNode node)
 			throws Exception {
 		printChatroomMessageToConsole(String.format("Adding new node %s to chatroom %s", node.getName(), chatroomId));
 		for (ClientConnectionObject record : listOfConnectedClients) {
-			if (record.getSocket() == clientSocket) {
+			if (record == clientConnectionObject) {
 				return;
 			}
 		}
-		listOfConnectedClients.add(new ClientConnectionObject(clientSocket, socketOutputStream));
+		listOfConnectedClients.add(clientConnectionObject);
 	}
 
 	public synchronized void broadcastMessageInChatroom(String message) {
@@ -51,8 +50,8 @@ public class Chatroom implements Comparable<Chatroom> {
 			if (record.getSocket() != null) {
 				try {
 					printChatroomMessageToConsole("Sending...");
-					record.getPrintWriter().print(message);
-					record.getPrintWriter().flush();
+					record.getSocketOutputStream().print(message);
+					record.getSocketOutputStream().flush();
 				} catch (Exception e) {
 					printChatroomMessageToConsole("Failed to broadcast to client at socket "
 							+ record.getSocket().getInetAddress().toString());

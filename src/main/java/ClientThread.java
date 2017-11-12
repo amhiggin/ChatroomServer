@@ -34,18 +34,16 @@ public class ClientThread extends Thread {
 	private static final String CLIENT_NAME_IDENTIFIER = "CLIENT_NAME: ";
 	public static final String STUDENT_ID = "13327954";
 
-	PrintWriter socketOutputStream = null;
-	BufferedReader socketInputStream = null;
-	private Socket socket;
+	ClientConnectionObject connectionObject;
 	List<Chatroom> joinedChatrooms = null;
 	private int joinId;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
 		try {
-			this.socket = clientSocket;
-			this.socketOutputStream = new PrintWriter(clientSocket.getOutputStream(), true);
-			this.socketInputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			this.connectionObject = new ClientConnectionObject(clientSocket,
+					new PrintWriter(clientSocket.getOutputStream(), true),
+					new BufferedReader(new InputStreamReader(clientSocket.getInputStream())));
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -56,13 +54,14 @@ public class ClientThread extends Thread {
 	public void run() {
 		while (true) {
 			try {
-				List<String> receivedFromClient = getFullMessageFromClient(this.socket);
+				List<String> receivedFromClient = getFullMessageFromClient(this.connectionObject.getSocket());
 				ClientRequest requestType = requestedAction(receivedFromClient);
 				if (requestType == null) {
 					ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
 					return;
 				}
-				ClientRequestNode clientNode = extractClientInfo(this.socket, requestType, receivedFromClient);
+				ClientRequestNode clientNode = extractClientInfo(this.connectionObject.getSocket(), requestType,
+						receivedFromClient);
 				if (clientNode == null) {
 					ChatroomServer
 							.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
@@ -105,7 +104,7 @@ public class ClientThread extends Thread {
 			handleRequestProcessingError(Error.InvalidRequest, clientNode);
 			return;
 		}
-		ChatroomServer.recordClientChangeWithServer(requestType, this.socket, clientNode);
+		ChatroomServer.recordClientChangeWithServer(this.connectionObject, clientNode);
 
 	}
 
@@ -127,7 +126,7 @@ public class ClientThread extends Thread {
 		String errorResponse = String.format(ServerResponse.ERROR.getValue(), errorMessage.getValue(),
 				errorMessage.getDescription());
 		try {
-			this.socket.getOutputStream().write(errorResponse.getBytes());
+			this.connectionObject.getSocket().getOutputStream().write(errorResponse.getBytes());
 		} catch (IOException e) {
 			String temporaryErrorMessageHolder = errorResponse;
 			errorResponse = "Failed to communicate failure response to client: " + temporaryErrorMessageHolder
@@ -153,14 +152,14 @@ public class ClientThread extends Thread {
 				requestedChatroom = createChatroom(chatroomRequested);
 				printThreadMessageToConsole(
 						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
-				requestedChatroom.addNewClientToChatroom(this.socket, clientNode, this.socketOutputStream);
+				requestedChatroom.addNewClientToChatroom(this.connectionObject, clientNode);
 				// update server records
 				ChatroomServer.getActiveChatRooms().add(requestedChatroom);
 			} else {
 				printThreadMessageToConsole(String.format("Chatroom %s already exists.. Will add client %s",
 						requestedChatroom.getChatroomId(), clientNode.getName()));
 				try {
-					requestedChatroom.addNewClientToChatroom(this.socket, clientNode, this.socketOutputStream);
+					requestedChatroom.addNewClientToChatroom(this.connectionObject, clientNode);
 				} catch (Exception e) {
 					e.printStackTrace();
 					printThreadMessageToConsole(String.format("%s was already a member of %s - resending JOIN response",
@@ -226,7 +225,7 @@ public class ClientThread extends Thread {
 
 				// Thirdly, remove the client from the chatroom
 				if (clientPresentInChatroom(existingChatroom)) {
-					existingChatroom.removeClientRecord(socket, clientNode);
+					existingChatroom.removeClientRecord(this.connectionObject.getSocket(), clientNode);
 				}
 			}
 		} catch (Exception e) {
@@ -237,7 +236,7 @@ public class ClientThread extends Thread {
 
 	private boolean clientPresentInChatroom(Chatroom existingChatroom) {
 		for (ClientConnectionObject record : existingChatroom.getListOfConnectedClients()) {
-			if (record.getSocket().equals(this.socket)) {
+			if (record.getSocket().equals(this.connectionObject.getSocket())) {
 				return true;
 			}
 		}
@@ -285,18 +284,15 @@ public class ClientThread extends Thread {
 	}
 
 	private void disconnectFromServer(ClientRequestNode clientNode) throws Exception {
-		String chatroomRequested = clientNode.getChatroomRequested();
 		printThreadMessageToConsole(String.format("Client %s disconnecting from server ", clientNode.getName()));
-		String requestedChatroom = chatroomRequested;
-		Chatroom chatroomAlreadyOnRecord = ChatroomServer.retrieveRequestedChatroomByRoomRefIfExists(requestedChatroom);
-		chatroomAlreadyOnRecord.removeClientRecord(this.socket, clientNode);
+		ChatroomServer.recordClientChangeWithServer(this.connectionObject, clientNode);
 	}
 
 	private synchronized void writeResponseToClient(String response) {
 		printThreadMessageToConsole(String.format("Writing response to client: %s", response));
 		try {
-			this.socketOutputStream.write(response);
-			this.socketOutputStream.flush();
+			this.connectionObject.getSocketOutputStream().write(response);
+			this.connectionObject.getSocketOutputStream().flush();
 			printThreadMessageToConsole("Response sent to client successfully");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -390,31 +386,6 @@ public class ClientThread extends Thread {
 	private void printThreadMessageToConsole(String message) {
 		System.out.println(String.format("%s>> THREAD: %s", getCurrentDateTime(), message));
 
-	}
-
-	// FIXME TODO @Amber see where I need this
-	private void checkIfAlreadyAssignedJoinId(Socket clientSocket) {
-		for (Socket socket : ChatroomServer.getAllConnectedClients()) {
-			if (socket == clientSocket) {
-				return;
-			}
-		}
-		this.joinId = ChatroomServer.nextClientId.getAndIncrement();
-	}
-
-	// TODO FIXME @Amber figure out where this comes into play
-	private String getRequestedChatroomRef(List<String> receivedFromClient) {
-		String chatroomRef = null;
-		for (String line : receivedFromClient) {
-			if (line.contains(LEAVE_CHATROOM_IDENTIFIER)) {
-				chatroomRef = line.split(LEAVE_CHATROOM_IDENTIFIER, 0)[1];
-			} else if (line.contains(JOIN_CHATROOM_IDENTIFIER)) {
-				chatroomRef = line.split(JOIN_CHATROOM_IDENTIFIER, 0)[1];
-			} else if (line.contains(CHAT_IDENTIFIER)) {
-				chatroomRef = line.split(CHAT_IDENTIFIER, 0)[1];
-			}
-		}
-		return chatroomRef;
 	}
 
 }

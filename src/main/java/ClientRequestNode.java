@@ -18,7 +18,7 @@ public class ClientRequestNode {
 		this.clientName = clientName;
 		this.setChatroomId(chatroomId);
 		this.receivedFromClient = receivedFromClient;
-		this.requestType = requestType;
+		this.setRequestType(requestType);
 	}
 
 	public String getName() {
@@ -42,5 +42,13 @@ public class ClientRequestNode {
 		StringBuilder builder = new StringBuilder();
 		builder.append(String.format("Client name: %s\n", this.getName()));
 		return builder.toString();
+	}
+
+	public ClientRequest getRequestType() {
+		return requestType;
+	}
+
+	public void setRequestType(ClientRequest requestType) {
+		this.requestType = requestType;
 	}
 }

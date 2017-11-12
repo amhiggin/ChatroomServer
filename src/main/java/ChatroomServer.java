@@ -18,7 +18,7 @@ public class ChatroomServer {
 	private static ServerSocket serverSocket;
 	private static volatile boolean running;
 	private static List<Chatroom> activeChatRooms;
-	private static List<Socket> connectedClients;
+	private static List<ClientConnectionObject> connectedClients;
 	static int serverPort;
 	static String serverIP;
 
@@ -55,7 +55,7 @@ public class ChatroomServer {
 	}
 
 	private static void initialiseServerManagementVariables() {
-		connectedClients = new ArrayList<Socket>();
+		connectedClients = new ArrayList<ClientConnectionObject>();
 		activeChatRooms = new ArrayList<Chatroom>();
 		running = true;
 		nextClientId = new AtomicInteger(0);
@@ -84,8 +84,8 @@ public class ChatroomServer {
 	public static synchronized void shutdown() {
 		try {
 			printServerMessageToConsole("Server shutting down...");
-			for (Socket socket : getAllConnectedClients()) {
-				socket.close();
+			for (ClientConnectionObject clientConnection : getAllConnectedClients()) {
+				clientConnection.getSocket().close();
 			}
 			getActiveChatRooms().clear();
 			getAllConnectedClients().clear();
@@ -97,20 +97,20 @@ public class ChatroomServer {
 		}
 	}
 
-	static synchronized void recordClientChangeWithServer(ClientRequest requestedAction, Socket clientSocket,
+	static synchronized void recordClientChangeWithServer(ClientConnectionObject clientConnectionObject,
 			ClientRequestNode clientNode) throws Exception {
 		if (clientNode != null) {
 			printServerMessageToConsole("In recordClientChangeWithServer method - client node isn't null");
 
-			if (requestedAction.equals(ClientRequest.JOIN_CHATROOM) && !getAllConnectedClients().contains(clientSocket)
+			if (clientNode.getRequestType().equals(ClientRequest.JOIN_CHATROOM)
+					&& !getAllConnectedClients().contains(clientConnectionObject.getSocket())
 					&& (retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested()) != null)) {
-				addClientRecordToServer(clientSocket);
+				addClientRecordToServer(clientConnectionObject);
 				printServerMessageToConsole("Successfully added new client record to server");
 				return;
-			} else if (requestedAction.equals(ClientRequest.DISCONNECT)
-					&& getAllConnectedClients().contains(clientSocket)) {
-				removeClientRecordFromServerUponDisconnect(clientSocket,
-						retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested()));
+			} else if (clientNode.getRequestType().equals(ClientRequest.DISCONNECT)
+					&& getAllConnectedClients().contains(clientConnectionObject.getSocket())) {
+				removeClientRecordFromServerUponDisconnect(clientConnectionObject);
 				printServerMessageToConsole("Successfully removed client record from server");
 				return;
 			}
@@ -120,28 +120,28 @@ public class ChatroomServer {
 		}
 	}
 
-	public static void addClientRecordToServer(Socket clientSocket) {
-		for (Socket socket : connectedClients) {
-			if (clientSocket == socket) {
+	public static void addClientRecordToServer(ClientConnectionObject clientConnectionObject) {
+		for (ClientConnectionObject clientConnection : connectedClients) {
+			if (clientConnection == clientConnectionObject) {
 				printServerMessageToConsole("client socket not added to server records: already existed");
 				return;
 			}
 		}
-		getAllConnectedClients().add(clientSocket);
-		printServerMessageToConsole("Added client socket to server");
+		getAllConnectedClients().add(clientConnectionObject);
+		printServerMessageToConsole("Added client connection record to server");
 	}
 
-	private static void removeClientRecordFromServerUponDisconnect(Socket clientSocket, Chatroom requestedChatroom)
+	private static void removeClientRecordFromServerUponDisconnect(ClientConnectionObject clientConnectionObject)
 			throws IOException {
 		// Note this involves removing from chatroom too
 		for (Chatroom chatroom : getActiveChatRooms()) {
-			if (chatroom == requestedChatroom) {
-				chatroom.getListOfConnectedClients().remove(clientSocket);
+			if (chatroom.getListOfConnectedClients().contains(clientConnectionObject)) {
+				chatroom.getListOfConnectedClients().remove(clientConnectionObject);
 				break;
 			}
 		}
-		connectedClients.remove(clientSocket);
-		clientSocket.close();
+		connectedClients.remove(clientConnectionObject);
+		clientConnectionObject.getSocket().close();
 		return;
 	}
 
@@ -177,7 +177,7 @@ public class ChatroomServer {
 		return serverPort;
 	}
 
-	public static synchronized List<Socket> getAllConnectedClients() {
+	public static synchronized List<ClientConnectionObject> getAllConnectedClients() {
 		return connectedClients;
 	}
 
