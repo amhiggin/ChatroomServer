@@ -56,7 +56,7 @@ public class ClientThread extends Thread {
 		while (disconnected == false) {
 			try {
 				if (!this.connectionObject.getSocket().isClosed()) {
-					List<String> receivedFromClient = getFullMessageFromClient(this.connectionObject.getSocket());
+					List<String> receivedFromClient = getFullMessageFromClient();
 					ClientRequest requestType = requestedAction(receivedFromClient);
 					if (requestType == null) {
 						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
