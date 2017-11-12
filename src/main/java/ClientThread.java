@@ -300,8 +300,8 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	public synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
-		BufferedInputStream inputStream = new BufferedInputStream(clientSocket.getInputStream());
+	public List<String> getFullMessageFromClient() throws IOException {
+		BufferedInputStream inputStream = new BufferedInputStream(this.connectionObject.getSocket().getInputStream());
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		int result = inputStream.read();
 		while ((result != -1) && (inputStream.available() > 0)) {

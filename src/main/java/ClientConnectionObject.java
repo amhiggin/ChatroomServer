@@ -5,9 +5,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ClientConnectionObject {
-	private Socket socket;
-	private PrintWriter socketOutputStream;
-	private BufferedReader socketInputStream;
+	private volatile Socket socket;
+	private volatile PrintWriter socketOutputStream;
+	private volatile BufferedReader socketInputStream;
 
 	public ClientConnectionObject(Socket socket, PrintWriter socketOutputStream, BufferedReader socketInputStream) {
 		this.setSocket(socket);
