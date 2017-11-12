@@ -103,14 +103,14 @@ public class ChatroomServer {
 			printServerMessageToConsole("In recordClientChangeWithServer method - client node isn't null");
 
 			if (requestedAction.equals(ClientRequest.JOIN_CHATROOM) && !getAllConnectedClients().contains(clientSocket)
-					&& (retrieveRequestedChatroomIfExists(clientNode.getChatroomRequested()) != null)) {
+					&& (retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested()) != null)) {
 				addClientRecordToServer(clientSocket);
 				printServerMessageToConsole("Successfully added new client record to server");
 				return;
 			} else if (requestedAction.equals(ClientRequest.DISCONNECT)
 					&& getAllConnectedClients().contains(clientSocket)) {
-				removeClientRecordFromServer(clientSocket,
-						retrieveRequestedChatroomIfExists(clientNode.getChatroomRequested()));
+				removeClientRecordFromServerUponDisconnect(clientSocket,
+						retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested()));
 				printServerMessageToConsole("Successfully removed client record from server");
 				return;
 			}
@@ -118,8 +118,6 @@ public class ChatroomServer {
 			printServerMessageToConsole(
 					"Finished executing recordClientChangeWithServer method - client node was null");
 		}
-		// If we have left the chatroom, we want to keep the record that we were
-		// in that chatroom (for repeated LEAVE requests)
 	}
 
 	public static void addClientRecordToServer(Socket clientSocket) {
@@ -133,7 +131,7 @@ public class ChatroomServer {
 		printServerMessageToConsole("Added client socket to server");
 	}
 
-	private static void removeClientRecordFromServer(Socket clientSocket, Chatroom requestedChatroom)
+	private static void removeClientRecordFromServerUponDisconnect(Socket clientSocket, Chatroom requestedChatroom)
 			throws IOException {
 		// Note this involves removing from chatroom too
 		for (Chatroom chatroom : getActiveChatRooms()) {
@@ -151,9 +149,8 @@ public class ChatroomServer {
 		return activeChatRooms;
 	}
 
-	public static synchronized Chatroom retrieveRequestedChatroomIfExists(String requestedChatroomToJoin) {
+	public static synchronized Chatroom retrieveRequestedChatroomByRoomIdIfExists(String requestedChatroomToJoin) {
 		for (Chatroom chatroom : activeChatRooms) {
-			// TODO @Amber verify the next bit of logic
 			if ((chatroom.getChatroomId().contains(requestedChatroomToJoin))) {
 				printServerMessageToConsole(
 						String.format("Chatroom %s found in server records", requestedChatroomToJoin));

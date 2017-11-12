@@ -78,8 +78,8 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private void dealWithRequestAsAppropriate(List<String> receivedFromClient, ClientRequestNode clientNode,
-			ClientRequest requestType) throws Exception {
+	private synchronized void dealWithRequestAsAppropriate(List<String> receivedFromClient,
+			ClientRequestNode clientNode, ClientRequest requestType) throws Exception {
 		if (clientNode == null) {
 			ChatroomServer.outputServiceErrorMessageToConsole("Null client node");
 			return;
@@ -145,7 +145,8 @@ public class ClientThread extends Thread {
 				String.format("Client %s joining chatroom %s", clientNode.getName(), chatroomRequested));
 		try {
 			String requestedChatroomToJoin = chatroomRequested;
-			Chatroom requestedChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToJoin);
+			Chatroom requestedChatroom = ChatroomServer
+					.retrieveRequestedChatroomByRoomIdIfExists(requestedChatroomToJoin);
 			if (this.joinId == UNDEFINED_JOIN_ID) {
 				this.joinId = ChatroomServer.nextClientId.getAndIncrement();
 			}
@@ -251,7 +252,7 @@ public class ClientThread extends Thread {
 	private void chat(ClientRequestNode clientNode) throws IOException {
 		String message = clientNode.getReceivedFromClient().get(3).split(SPLIT_PATTERN, 0)[1];
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer
-				.retrieveRequestedChatroomIfExists(clientNode.getChatroomRequested());
+				.retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested());
 		if (chatroomAlreadyOnRecord != null) {
 			String responseToClient = String.format(ServerResponse.CHAT.getValue(),
 					chatroomAlreadyOnRecord.getChatroomId(), this.joinId, clientNode.getName(), message);
@@ -272,7 +273,7 @@ public class ClientThread extends Thread {
 		chatroomAlreadyOnRecord.removeClientRecord(this.socket, clientNode);
 	}
 
-	private void writeResponseToClient(String response) {
+	private synchronized void writeResponseToClient(String response) {
 		printThreadMessageToConsole(String.format("Writing response to client: %s", response));
 		try {
 			this.socketOutputStream.write(response);
