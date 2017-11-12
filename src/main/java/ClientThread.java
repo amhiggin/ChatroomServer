@@ -53,24 +53,21 @@ public class ClientThread extends Thread {
 
 	@Override
 	public void run() {
-		while (disconnected == false) {
+		while ((disconnected == false) && !this.connectionObject.getSocket().isClosed()) {
 			try {
-				if (!this.connectionObject.getSocket().isClosed()) {
-					List<String> receivedFromClient = getFullMessageFromClient();
-					ClientRequest requestType = requestedAction(receivedFromClient);
-					if (requestType == null) {
-						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
-						return;
-					}
-					ClientRequestNode clientNode = extractClientInfo(this.connectionObject.getSocket(), requestType,
-							receivedFromClient);
-					if (clientNode == null) {
-						ChatroomServer
-								.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
-						return;
-					}
-					dealWithRequestAsAppropriate(receivedFromClient, clientNode, requestType);
+				List<String> receivedFromClient = getFullMessageFromClient();
+				ClientRequest requestType = requestedAction(receivedFromClient);
+				if (requestType == null) {
+					ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
+					return;
 				}
+				ClientRequestNode clientNode = extractClientInfo(requestType, receivedFromClient);
+				if (clientNode == null) {
+					ChatroomServer
+							.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
+					return;
+				}
+				dealWithRequest(clientNode);
 			} catch (Exception e) {
 				ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 				e.printStackTrace();
@@ -78,18 +75,17 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private synchronized void dealWithRequestAsAppropriate(List<String> receivedFromClient,
-			ClientRequestNode clientNode, ClientRequest requestType) throws Exception {
+	private synchronized void dealWithRequest(ClientRequestNode clientNode) throws Exception {
 		if (clientNode == null) {
 			ChatroomServer.outputServiceErrorMessageToConsole("Null client node");
 		}
-		switch (requestType) {
+		switch (clientNode.getRequestType()) {
 		case JOIN_CHATROOM:
 			joinChatroom(clientNode);
 			ChatroomServer.addClientRecordToServer(this.connectionObject, clientNode);
 			return;
 		case HELO:
-			sayHello(clientNode, receivedFromClient);
+			sayHello(clientNode);
 			return;
 		case LEAVE_CHATROOM:
 			leaveChatroom(clientNode);
@@ -99,7 +95,6 @@ public class ClientThread extends Thread {
 			return;
 		case DISCONNECT:
 			disconnect(clientNode);
-			this.disconnected = true;
 			return;
 		case KILL_SERVICE:
 			killService(clientNode);
@@ -116,7 +111,7 @@ public class ClientThread extends Thread {
 		this.connectionObject.getSocket().close();
 		printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
 		ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
-		this.connectionObject = null;
+		this.disconnected = true;
 	}
 
 	private void killService(ClientRequestNode clientNode) {
@@ -226,8 +221,7 @@ public class ClientThread extends Thread {
 				}
 
 				// Secondly, send message in chatroom about client leaving
-				// This is done regardless of whether client is still in the
-				// chatroom
+				// Regardless of whether client is still in the chatroom
 				String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
 				String chatMessage = String.format(ServerResponse.CHAT.getValue(), existingChatroom.getChatroomRef(),
 						clientNode.getName(), clientLeftChatroomMessage);
@@ -254,10 +248,10 @@ public class ClientThread extends Thread {
 		return false;
 	}
 
-	private void sayHello(ClientRequestNode clientNode, List<String> receivedFromClient) {
+	private void sayHello(ClientRequestNode clientNode) {
 		printThreadMessageToConsole("Going to say hello!");
 		try {
-			String response = constructHelloResponse(receivedFromClient);
+			String response = constructHelloResponse(clientNode.getReceivedFromClient());
 			writeResponseToClient(response);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -324,8 +318,7 @@ public class ClientThread extends Thread {
 		return lines;
 	}
 
-	public ClientRequestNode extractClientInfo(Socket clientSocket, ClientRequest requestType, List<String> message)
-			throws IOException {
+	public ClientRequestNode extractClientInfo(ClientRequest requestType, List<String> message) throws IOException {
 		switch (requestType) {
 		case JOIN_CHATROOM:
 			return new ClientRequestNode(message.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
