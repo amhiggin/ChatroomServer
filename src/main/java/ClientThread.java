@@ -1,11 +1,8 @@
 package main.java;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
@@ -45,7 +42,7 @@ public class ClientThread extends Thread {
 		try {
 			this.connectionObject = new ClientConnectionObject(clientSocket,
 					new PrintWriter(clientSocket.getOutputStream(), true),
-					new BufferedReader(new InputStreamReader(clientSocket.getInputStream())));
+					new BufferedInputStream(clientSocket.getInputStream()));
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
 			this.disconnected = false;
 		} catch (IOException e) {
@@ -304,13 +301,11 @@ public class ClientThread extends Thread {
 	}
 
 	public List<String> getFullMessageFromClient() throws Exception {
-		InputStream socketInputStream = this.connectionObject.getSocket().getInputStream();
-		BufferedInputStream inputStream = new BufferedInputStream(socketInputStream);
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		int result = inputStream.read();
-		while ((result != -1) && (inputStream.available() > 0)) {
+		int result = this.connectionObject.getSocketInputStream().read();
+		while ((result != -1) && (this.connectionObject.getSocketInputStream().available() > 0)) {
 			outputStream.write((byte) result);
-			result = inputStream.read();
+			result = this.connectionObject.getSocketInputStream().read();
 		}
 		// Assuming UTF-8 encoding
 		String inFromClient = outputStream.toString("UTF-8");
