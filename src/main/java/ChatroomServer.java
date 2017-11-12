@@ -156,10 +156,9 @@ public class ChatroomServer {
 						String.format("Sent message in chatroom%s: '%s'", chatroom.getChatroomId(), chatMessage));
 			}
 		}
-		printServerMessageToConsole(String.format("removed client record from all chatrooms");
+		printServerMessageToConsole(String.format("removed client record from all chatrooms"));
 		clientConnectionObject.getSocket().close();
-		printServerMessageToConsole(String.format("Client %s port closed",
-				clientNode.getName()));
+		printServerMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
 	}
 
 	public static List<Chatroom> getActiveChatRooms() {
