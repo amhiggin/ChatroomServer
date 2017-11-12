@@ -119,8 +119,7 @@ public class ChatroomServer {
 		String chatMessage;
 		if (clientNode.getRequestType().equals(ClientRequest.DISCONNECT)
 				&& getAllConnectedClients().contains(clientConnectionObject)) {
-			removeClientRecordFromServerUponDisconnect(clientConnectionObject, clientNode);
-			printServerMessageToConsole("Successfully removed client record from server");
+
 			for (Chatroom chatroom : getActiveChatRooms()) {
 				if (chatroom.getListOfConnectedClients().contains(clientConnectionObject)) {
 					chatroom.removeClientRecord(clientConnectionObject, clientNode);
@@ -135,9 +134,9 @@ public class ChatroomServer {
 				}
 			}
 			printServerMessageToConsole(String.format("removed client record from all chatrooms"));
+			getAllConnectedClients().remove(clientConnectionObject);
+			closeClientConnectionStreams(clientConnectionObject, clientNode);
 		}
-
-		closeClientConnectionStreams(clientConnectionObject, clientNode);
 	}
 
 	private static void closeClientConnectionStreams(ClientConnectionObject clientConnectionObject,
