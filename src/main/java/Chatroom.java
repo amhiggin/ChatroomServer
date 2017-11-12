@@ -2,30 +2,29 @@ package main.java;
 
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.joda.time.LocalDateTime;
 
 public class Chatroom implements Comparable<Chatroom> {
 
-	private Map<Socket, PrintWriter> listOfConnectedClients;
+	private List<ClientConnectionObject> listOfConnectedClients;
 	private String chatroomId;
 	private Integer chatroomRef;
 
 	public Chatroom(String id, int chatroomRef) {
 		chatroomId = id;
-		this.listOfConnectedClients = new HashMap<Socket, PrintWriter>();
+		this.listOfConnectedClients = new ArrayList<ClientConnectionObject>();
 		this.chatroomRef = chatroomRef;
 	}
 
 	public void removeClientRecord(Socket clientSocket, ClientRequestNode node) throws Exception {
 		printChatroomMessageToConsole(
 				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomRef));
-		for (Entry<Socket, PrintWriter> record : listOfConnectedClients.entrySet()) {
-			if (record.getKey().equals(clientSocket)) {
-				this.listOfConnectedClients.remove(record.getKey(), record.getValue());
+		for (ClientConnectionObject record : listOfConnectedClients) {
+			if (record.getSocket().equals(clientSocket)) {
+				this.listOfConnectedClients.remove(record);
 				printChatroomMessageToConsole(
 						String.format("Removed node %s from chatroom %s", node.getName(), this.chatroomRef));
 				return;
@@ -37,26 +36,26 @@ public class Chatroom implements Comparable<Chatroom> {
 	public void addNewClientToChatroom(Socket clientSocket, ClientRequestNode node, PrintWriter socketOutputStream)
 			throws Exception {
 		printChatroomMessageToConsole(String.format("Adding new node %s to chatroom %s", node.getName(), chatroomId));
-		for (Socket socket : listOfConnectedClients.keySet()) {
-			if (socket == clientSocket) {
+		for (ClientConnectionObject record : listOfConnectedClients) {
+			if (record.getSocket() == clientSocket) {
 				return;
 			}
 		}
-		listOfConnectedClients.put(clientSocket, socketOutputStream);
+		listOfConnectedClients.add(new ClientConnectionObject(clientSocket, socketOutputStream));
 	}
 
 	public synchronized void broadcastMessageInChatroom(String message) {
 		printChatroomMessageToConsole("Will broadcast message to all clients in chatroom as follows: " + message);
 
-		for (Entry<Socket, PrintWriter> record : listOfConnectedClients.entrySet()) {
-			if (record.getKey() != null) {
+		for (ClientConnectionObject record : listOfConnectedClients) {
+			if (record.getSocket() != null) {
 				try {
 					printChatroomMessageToConsole("Sending...");
-					record.getValue().print(message);
-					record.getValue().flush();
+					record.getPrintWriter().print(message);
+					record.getPrintWriter().flush();
 				} catch (Exception e) {
-					printChatroomMessageToConsole(
-							"Failed to broadcast to client at socket " + record.getKey().getInetAddress().toString());
+					printChatroomMessageToConsole("Failed to broadcast to client at socket "
+							+ record.getSocket().getInetAddress().toString());
 				}
 			}
 		}
@@ -82,7 +81,7 @@ public class Chatroom implements Comparable<Chatroom> {
 		return 0;
 	}
 
-	public Map<Socket, PrintWriter> getListOfConnectedClients() {
+	public List<ClientConnectionObject> getListOfConnectedClients() {
 		return this.listOfConnectedClients;
 	}
 

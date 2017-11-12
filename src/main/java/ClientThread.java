@@ -209,7 +209,7 @@ public class ClientThread extends Thread {
 
 			if (existingChatroom != null) {
 				// First, send leave response to client in question
-				if (existingChatroom.getListOfConnectedClients().containsKey(this.socket)) {
+				if (clientPresentInChatroom(existingChatroom)) {
 					String responseToClient = String.format(ServerResponse.LEAVE.getValue(),
 							existingChatroom.getChatroomRef(), this.joinId);
 					writeResponseToClient(responseToClient);
@@ -225,7 +225,7 @@ public class ClientThread extends Thread {
 				existingChatroom.broadcastMessageInChatroom(chatMessage);
 
 				// Thirdly, remove the client from the chatroom
-				if (existingChatroom.getListOfConnectedClients().containsKey(this.socket)) {
+				if (clientPresentInChatroom(existingChatroom)) {
 					existingChatroom.removeClientRecord(socket, clientNode);
 				}
 			}
@@ -233,6 +233,15 @@ public class ClientThread extends Thread {
 			e.printStackTrace();
 			handleRequestProcessingError(Error.LeaveChatroom, clientNode);
 		}
+	}
+
+	private boolean clientPresentInChatroom(Chatroom existingChatroom) {
+		for (ClientConnectionObject record : existingChatroom.getListOfConnectedClients()) {
+			if (record.getSocket().equals(this.socket)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void sayHello(ClientRequestNode clientNode, List<String> receivedFromClient) {
