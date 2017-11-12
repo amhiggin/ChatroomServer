@@ -208,17 +208,23 @@ public class ClientThread extends Thread {
 					.retrieveRequestedChatroomByRoomRefIfExists(requestedChatroomToLeave);
 
 			if (existingChatroom != null) {
+				// First, send leave response to client in question
 				if (existingChatroom.getListOfConnectedClients().containsKey(this.socket)) {
 					String responseToClient = String.format(ServerResponse.LEAVE.getValue(),
 							existingChatroom.getChatroomRef(), this.joinId);
 					writeResponseToClient(responseToClient);
 				}
+
 				// Secondly, send message in chatroom about client leaving
+				// This is done regardless of whether client is still in the
+				// chatroom
 				String clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
 				String chatMessage = String.format(ServerResponse.CHAT.getValue(), existingChatroom.getChatroomRef(),
 						clientNode.getName(), clientLeftChatroomMessage);
 
 				existingChatroom.broadcastMessageInChatroom(chatMessage);
+
+				// Thirdly, remove the client from the chatroom
 				if (existingChatroom.getListOfConnectedClients().containsKey(this.socket)) {
 					existingChatroom.removeClientRecord(socket, clientNode);
 				}
