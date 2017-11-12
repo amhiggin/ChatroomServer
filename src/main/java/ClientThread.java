@@ -265,12 +265,18 @@ public class ClientThread extends Thread {
 	private void chat(ClientRequestNode clientNode) throws IOException {
 		String message = clientNode.getReceivedFromClient().get(3).split(SPLIT_PATTERN, 0)[1];
 		Chatroom chatroomAlreadyOnRecord = ChatroomServer
-				.retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested());
+				.retrieveRequestedChatroomByRoomRefIfExists(clientNode.getChatroomRequested());
 		if (chatroomAlreadyOnRecord != null) {
 			String responseToClient = String.format(ServerResponse.CHAT.getValue(),
 					chatroomAlreadyOnRecord.getChatroomId(), this.joinId, clientNode.getName(), message);
 			chatroomAlreadyOnRecord.broadcastMessageInChatroom(responseToClient);
 			return;
+		} else {
+			printThreadMessageToConsole(String.format(
+					"Chatroom %s requested for chatting doesn't exist yet.. will need to create it\n*** BUT WON'T DO THAT YET!!!***\n",
+					clientNode.getChatroomRequested()));
+			// FIXME TODO @Amber
+			// joinChatroom(clientNode);
 		}
 		printThreadMessageToConsole(String.format("Client %s chatting in chatroom %s", clientNode.getName(),
 				clientNode.getChatroomRequested()));

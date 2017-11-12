@@ -150,6 +150,8 @@ public class ChatroomServer {
 	}
 
 	public static synchronized Chatroom retrieveRequestedChatroomByRoomIdIfExists(String requestedChatroomToJoin) {
+		printServerMessageToConsole(
+				String.format("Checking with server whether chatroom %s exists...", requestedChatroomToJoin));
 		for (Chatroom chatroom : activeChatRooms) {
 			if ((chatroom.getChatroomId().contains(requestedChatroomToJoin))) {
 				printServerMessageToConsole(
