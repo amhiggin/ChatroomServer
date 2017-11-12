@@ -6,19 +6,19 @@ import java.util.List;
  * An object for storing the temporary info about a client request.
  */
 
-public class ClientRequestNode implements Comparable<ClientRequestNode> {
+public class ClientRequestNode {
 
 	private String clientName;
-	private Integer joinId;
 	private String chatroomId;
 	private List<String> receivedFromClient;
-	// requestType?
-	// message received?
+	private ClientRequest requestType;
 
-	public ClientRequestNode(String clientName, String chatroomId, Integer joinId, List<String> receivedFromClient) {
+	public ClientRequestNode(String clientName, String chatroomId, List<String> receivedFromClient,
+			ClientRequest requestType) {
 		this.clientName = clientName;
-		this.joinId = joinId;
 		this.setChatroomId(chatroomId);
+		this.receivedFromClient = receivedFromClient;
+		this.requestType = requestType;
 	}
 
 	public String getName() {
@@ -27,14 +27,6 @@ public class ClientRequestNode implements Comparable<ClientRequestNode> {
 
 	public List<String> getReceivedFromClient() {
 		return this.receivedFromClient;
-	}
-
-	public Integer getJoinId() {
-		return this.joinId;
-	}
-
-	public void setJoinId(Integer joinId) {
-		this.joinId = joinId;
 	}
 
 	public String getChatroomRequested() {
@@ -46,20 +38,9 @@ public class ClientRequestNode implements Comparable<ClientRequestNode> {
 	}
 
 	@Override
-	public int compareTo(ClientRequestNode o) {
-		if (this.getJoinId() < o.getJoinId()) {
-			return -1;
-		} else if (this.getJoinId() > o.getJoinId()) {
-			return 1;
-		}
-		return 0;
-	}
-
-	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(String.format("Client name: %s\n", this.getName()));
-		builder.append(String.format("JoinId: %s\n", this.getJoinId()));
 		return builder.toString();
 	}
 }

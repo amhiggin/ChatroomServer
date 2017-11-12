@@ -15,6 +15,11 @@ import org.joda.time.LocalDateTime;
 /*
  * Thread which is created for every new client interaction.
  * Enables handling multiple requests and responses in parallel.
+ * 
+	 * Every time the thread is run, the message, request type and clientInfo
+	 * should be extracted. These are request-specific. The socket, input and
+	 * output streams, and joinIds should all be common to the connection
+	 * itself. They don't need to be redefined every time the client connects.
  */
 
 public class ClientThread extends Thread {
@@ -33,7 +38,7 @@ public class ClientThread extends Thread {
 	BufferedReader socketInputStream = null;
 	private Socket socket;
 	List<Chatroom> joinedChatrooms = null;
-	private int joinId = -1;
+	private int joinId;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
@@ -41,17 +46,13 @@ public class ClientThread extends Thread {
 			this.socket = clientSocket;
 			this.socketOutputStream = new PrintWriter(clientSocket.getOutputStream(), true);
 			this.socketInputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			// @Amber - the join Id should be unique to this connection: not to
+			// joining of chatroom
+			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
-	/*
-	 * Every time the thread is run, the message, request type and clientInfo
-	 * should be extracted. These are request-specific. The socket, input and
-	 * output streams, and joinIds should all be common to the connection
-	 * itself. They don't need to be redefined every time the client connects.
-	 */
 
 	@Override
 	public void run() {
@@ -145,15 +146,11 @@ public class ClientThread extends Thread {
 		try {
 			String requestedChatroomToJoin = chatroomRequested;
 			Chatroom requestedChatroom = ChatroomServer.retrieveRequestedChatroomIfExists(requestedChatroomToJoin);
-			if (this.joinId == -1) {
-				int newJoinId = ChatroomServer.nextClientId.getAndIncrement();
-				this.joinId = newJoinId;
-				clientNode.setJoinId(newJoinId);
+			if (this.joinId == UNDEFINED_JOIN_ID) {
+				this.joinId = ChatroomServer.nextClientId.getAndIncrement();
 			}
 
 			if (requestedChatroom == null) {
-				// FIXME: Have to be able to check whether the chatroom already
-				// exists
 				requestedChatroom = createChatroom(chatroomRequested);
 				printThreadMessageToConsole(
 						String.format("Chatroom %s was created!", requestedChatroom.getChatroomId()));
@@ -192,8 +189,7 @@ public class ClientThread extends Thread {
 	private void writeJoinResponseToClientAndBroadcastMessageInChatroom(Chatroom requestedChatroom,
 			ClientRequestNode clientNode) {
 		String responseToClient = String.format(ServerResponse.JOIN.getValue(), requestedChatroom.getChatroomId(),
-				ChatroomServer.serverIP, ChatroomServer.serverPort, requestedChatroom.getChatroomRef(),
-				clientNode.getJoinId());
+				ChatroomServer.serverIP, ChatroomServer.serverPort, requestedChatroom.getChatroomRef(), this.joinId);
 		writeResponseToClient(responseToClient);
 
 		// Broadcast message in chatroom
@@ -215,7 +211,7 @@ public class ClientThread extends Thread {
 			if (existingChatroom != null) {
 				if (existingChatroom.getListOfConnectedClients().containsKey(this.socket)) {
 					String responseToClient = String.format(ServerResponse.LEAVE.getValue(),
-							existingChatroom.getChatroomRef(), clientNode.getJoinId());
+							existingChatroom.getChatroomRef(), this.joinId);
 					writeResponseToClient(responseToClient);
 				}
 				// Secondly, send message in chatroom about client leaving
@@ -258,7 +254,7 @@ public class ClientThread extends Thread {
 				.retrieveRequestedChatroomIfExists(clientNode.getChatroomRequested());
 		if (chatroomAlreadyOnRecord != null) {
 			String responseToClient = String.format(ServerResponse.CHAT.getValue(),
-					chatroomAlreadyOnRecord.getChatroomId(), clientNode.getJoinId(), clientNode.getName(), message);
+					chatroomAlreadyOnRecord.getChatroomId(), this.joinId, clientNode.getName(), message);
 			chatroomAlreadyOnRecord.broadcastMessageInChatroom(responseToClient);
 			return;
 		}
@@ -317,24 +313,23 @@ public class ClientThread extends Thread {
 		switch (requestType) {
 		case JOIN_CHATROOM:
 			return new ClientRequestNode(message.get(3).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					message.get(0).split(JOIN_CHATROOM_IDENTIFIER, 0)[1], ChatroomServer.nextClientId.getAndIncrement(),
-					message);
+					message.get(0).split(JOIN_CHATROOM_IDENTIFIER, 0)[1], message, requestType);
 		case CHAT:
+			this.joinId = Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]);
 			return new ClientRequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					message.get(0).split(CHAT_IDENTIFIER, 0)[1],
-					Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]), message);
+					message.get(0).split(CHAT_IDENTIFIER, 0)[1], message, requestType);
 		case LEAVE_CHATROOM:
+			this.joinId = Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]);
 			return new ClientRequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
-					message.get(0).split(LEAVE_CHATROOM_IDENTIFIER, 0)[1],
-					Integer.parseInt(message.get(1).split(JOIN_ID_IDENTIFIER, 0)[1]), message);
+					message.get(0).split(LEAVE_CHATROOM_IDENTIFIER, 0)[1], message, requestType);
 		case DISCONNECT:
-			return new ClientRequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null, UNDEFINED_JOIN_ID,
-					message);
+			return new ClientRequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null, message,
+					requestType);
 		case HELO:
 			printThreadMessageToConsole("Helo client node created");
-			return new ClientRequestNode(null, null, UNDEFINED_JOIN_ID, message);
+			return new ClientRequestNode(null, null, message, requestType);
 		case KILL_SERVICE:
-			return new ClientRequestNode(null, null, null, message);
+			return new ClientRequestNode(null, null, message, requestType);
 		case NULL:
 			return null;
 		default:
