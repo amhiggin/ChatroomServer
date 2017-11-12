@@ -56,6 +56,10 @@ public class ClientThread extends Thread {
 			try {
 				if (!this.connectionObject.getSocket().isClosed()) {
 					List<String> receivedFromClient = getFullMessageFromClient();
+					if (receivedFromClient == null) {
+						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
+						return;
+					}
 					ClientRequest requestType = requestedAction(receivedFromClient);
 					if (requestType == null) {
 						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
@@ -300,17 +304,21 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	public List<String> getFullMessageFromClient() throws Exception {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		int result = this.connectionObject.getSocketInputStream().read();
-		while ((result != -1) && (this.connectionObject.getSocketInputStream().available() > 0)) {
-			outputStream.write((byte) result);
-			result = this.connectionObject.getSocketInputStream().read();
+	public List<String> getFullMessageFromClient() {
+		try {
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			int result = this.connectionObject.getSocketInputStream().read();
+			while ((result != -1) && (this.connectionObject.getSocketInputStream().available() > 0)) {
+				outputStream.write((byte) result);
+				result = this.connectionObject.getSocketInputStream().read();
+			}
+			// Assuming UTF-8 encoding
+			String inFromClient = outputStream.toString("UTF-8");
+			List<String> lines = getRequestStringAsArrayList(inFromClient);
+			return lines;
+		} catch (Exception e) {
+			return null;
 		}
-		// Assuming UTF-8 encoding
-		String inFromClient = outputStream.toString("UTF-8");
-		List<String> lines = getRequestStringAsArrayList(inFromClient);
-		return lines;
 	}
 
 	private List<String> getRequestStringAsArrayList(String inFromClient) {
