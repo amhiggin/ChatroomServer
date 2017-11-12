@@ -268,7 +268,7 @@ public class ClientThread extends Thread {
 				.retrieveRequestedChatroomByRoomRefIfExists(clientNode.getChatroomRequested());
 		if (chatroomAlreadyOnRecord != null) {
 			String responseToClient = String.format(ServerResponse.CHAT.getValue(),
-					chatroomAlreadyOnRecord.getChatroomId(), this.joinId, clientNode.getName(), message);
+					chatroomAlreadyOnRecord.getChatroomRef(), this.joinId, clientNode.getName(), message);
 			chatroomAlreadyOnRecord.broadcastMessageInChatroom(responseToClient);
 			return;
 		} else {
