@@ -280,6 +280,7 @@ public class ClientThread extends Thread {
 	private void disconnectFromServer(ClientRequestNode clientNode) throws Exception {
 		printThreadMessageToConsole(String.format("Client %s disconnecting from server ", clientNode.getName()));
 		ChatroomServer.recordClientChangeWithServer(this.connectionObject, clientNode);
+		this.join(); // wait for thread to die
 	}
 
 	private synchronized void writeResponseToClient(String response) {

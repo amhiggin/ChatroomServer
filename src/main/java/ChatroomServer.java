@@ -142,9 +142,6 @@ public class ChatroomServer {
 		// First, remove the client record from the server
 		connectedClients.remove(clientConnectionObject);
 		printServerMessageToConsole(String.format("Client %s removed from the server", clientNode.getName()));
-		clientConnectionObject.getSocket().close();
-		printServerMessageToConsole(String.format("Client %s port closed. Will now remove records from all chatrooms",
-				clientNode.getName()));
 
 		for (Chatroom chatroom : getActiveChatRooms()) {
 			if (chatroom.getListOfConnectedClients().contains(clientConnectionObject)) {
@@ -159,7 +156,10 @@ public class ChatroomServer {
 						String.format("Sent message in chatroom%s: '%s'", chatroom.getChatroomId(), chatMessage));
 			}
 		}
-		return;
+		printServerMessageToConsole(String.format("removed client record from all chatrooms");
+		clientConnectionObject.getSocket().close();
+		printServerMessageToConsole(String.format("Client %s port closed",
+				clientNode.getName()));
 	}
 
 	public static List<Chatroom> getActiveChatRooms() {
