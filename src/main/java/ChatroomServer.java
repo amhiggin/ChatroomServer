@@ -135,16 +135,7 @@ public class ChatroomServer {
 			}
 			printServerMessageToConsole(String.format("removed client record from all chatrooms"));
 			getAllConnectedClients().remove(clientConnectionObject);
-			closeClientConnectionStreams(clientConnectionObject, clientNode);
 		}
-	}
-
-	private static void closeClientConnectionStreams(ClientConnectionObject clientConnectionObject,
-			ClientRequestNode clientNode) throws IOException {
-		clientConnectionObject.getSocketInputStream().close();
-		clientConnectionObject.getSocketOutputStream().close();
-		clientConnectionObject.getSocket().close();
-		printServerMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
 	}
 
 	public static List<Chatroom> getActiveChatRooms() {

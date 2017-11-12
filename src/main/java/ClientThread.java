@@ -97,7 +97,7 @@ public class ClientThread extends Thread {
 			chat(clientNode);
 			return;
 		case DISCONNECT:
-			ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
+			disconnect(clientNode);
 			this.disconnected = true;
 			return;
 		case KILL_SERVICE:
@@ -107,6 +107,15 @@ public class ClientThread extends Thread {
 			handleRequestProcessingError(Error.InvalidRequest, clientNode);
 			return;
 		}
+	}
+
+	private void disconnect(ClientRequestNode clientNode) throws Exception {
+		this.connectionObject.getSocketInputStream().close();
+		this.connectionObject.getSocketOutputStream().close();
+		this.connectionObject.getSocket().close();
+		printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
+		ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
+		this.connectionObject = null;
 	}
 
 	private void killService(ClientRequestNode clientNode) {
