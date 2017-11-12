@@ -97,67 +97,45 @@ public class ChatroomServer {
 		}
 	}
 
-	static synchronized boolean recordClientChangeWithServer(ClientConnectionObject clientConnectionObject,
+	static void addClientRecordToServer(ClientConnectionObject clientConnectionObject, ClientRequestNode clientNode) {
+		// JOIN
+		if (clientNode.getRequestType().equals(ClientRequest.JOIN_CHATROOM)
+				&& !getAllConnectedClients().contains(clientConnectionObject)
+				&& (retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested()) != null)) {
+			for (ClientConnectionObject clientConnection : connectedClients) {
+				if (clientConnection == clientConnectionObject) {
+					printServerMessageToConsole("client socket not added to server records: already existed");
+					return;
+				}
+			}
+			getAllConnectedClients().add(clientConnectionObject);
+			printServerMessageToConsole("Added client connection record to server");
+		}
+	}
+
+	static synchronized void removeClientRecordFromServerUponDisconnect(ClientConnectionObject clientConnectionObject,
 			ClientRequestNode clientNode) throws Exception {
-		if (clientNode != null) {
-			if (!clientNode.getRequestType().equals(ClientRequest.JOIN_CHATROOM)
-					|| !clientNode.getRequestType().equals(ClientRequest.DISCONNECT)) {
-				return false;
-			}
-
-			printServerMessageToConsole(String.format("In recordClientChangeWithServer method - request type is %s",
-					clientNode.getRequestType().getValue()));
-
-			// JOIN
-			if (clientNode.getRequestType().equals(ClientRequest.JOIN_CHATROOM)
-					&& !getAllConnectedClients().contains(clientConnectionObject)
-					&& (retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested()) != null)) {
-				addClientRecordToServer(clientConnectionObject);
-				printServerMessageToConsole("Successfully added new client record to server");
-				return false;
-			}
-			// DISCONNECT
-			else if (clientNode.getRequestType().equals(ClientRequest.DISCONNECT)
-					&& getAllConnectedClients().contains(clientConnectionObject)) {
-				removeClientRecordFromServerUponDisconnect(clientConnectionObject, clientNode);
-				printServerMessageToConsole("Successfully removed client record from server");
-				return true;
-			}
-		}
-		printServerMessageToConsole("Finished executing recordClientChangeWithServer method - client node was null");
-		return false;
-	}
-
-	public static void addClientRecordToServer(ClientConnectionObject clientConnectionObject) {
-		for (ClientConnectionObject clientConnection : connectedClients) {
-			if (clientConnection == clientConnectionObject) {
-				printServerMessageToConsole("client socket not added to server records: already existed");
-				return;
-			}
-		}
-		getAllConnectedClients().add(clientConnectionObject);
-		printServerMessageToConsole("Added client connection record to server");
-	}
-
-	private static synchronized void removeClientRecordFromServerUponDisconnect(
-			ClientConnectionObject clientConnectionObject, ClientRequestNode clientNode) throws Exception {
 		String clientLeftChatroomMessage;
 		String chatMessage;
-
-		for (Chatroom chatroom : getActiveChatRooms()) {
-			if (chatroom.getListOfConnectedClients().contains(clientConnectionObject)) {
-				chatroom.removeClientRecord(clientConnectionObject, clientNode);
-				printServerMessageToConsole(String.format("Removed client %s from chatroom %s", clientNode.getName(),
-						chatroom.getChatroomId()));
-				clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
-				chatMessage = String.format(ServerResponse.CHAT.getValue(), chatroom.getChatroomRef(),
-						clientNode.getName(), clientLeftChatroomMessage);
-				chatroom.broadcastMessageInChatroom(chatMessage);
-				printServerMessageToConsole(
-						String.format("Sent message in chatroom%s: '%s'", chatroom.getChatroomId(), chatMessage));
+		if (clientNode.getRequestType().equals(ClientRequest.DISCONNECT)
+				&& getAllConnectedClients().contains(clientConnectionObject)) {
+			removeClientRecordFromServerUponDisconnect(clientConnectionObject, clientNode);
+			printServerMessageToConsole("Successfully removed client record from server");
+			for (Chatroom chatroom : getActiveChatRooms()) {
+				if (chatroom.getListOfConnectedClients().contains(clientConnectionObject)) {
+					chatroom.removeClientRecord(clientConnectionObject, clientNode);
+					printServerMessageToConsole(String.format("Removed client %s from chatroom %s",
+							clientNode.getName(), chatroom.getChatroomId()));
+					clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
+					chatMessage = String.format(ServerResponse.CHAT.getValue(), chatroom.getChatroomRef(),
+							clientNode.getName(), clientLeftChatroomMessage);
+					chatroom.broadcastMessageInChatroom(chatMessage);
+					printServerMessageToConsole(
+							String.format("Sent message in chatroom%s: '%s'", chatroom.getChatroomId(), chatMessage));
+				}
 			}
+			printServerMessageToConsole(String.format("removed client record from all chatrooms"));
 		}
-		printServerMessageToConsole(String.format("removed client record from all chatrooms"));
 
 		closeClientConnectionStreams(clientConnectionObject, clientNode);
 	}
