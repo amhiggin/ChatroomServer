@@ -56,20 +56,25 @@ public class ClientThread extends Thread {
 	public void run() {
 		while ((disconnected == false) && !this.connectionObject.getSocket().isClosed()) {
 			try {
-				List<String> receivedFromClient = getFullMessageFromClient();
-				ClientRequest requestType = requestedAction(receivedFromClient);
-				if (requestType == null) {
-					ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
-					return;
+				if (!this.connectionObject.getSocket().isClosed()) {
+					List<String> receivedFromClient = getFullMessageFromClient();
+					ClientRequest requestType = requestedAction(receivedFromClient);
+					if (requestType == null) {
+						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
+						return;
+					}
+					ClientRequestNode clientNode = extractClientInfo(requestType, receivedFromClient);
+					if (clientNode == null) {
+						ChatroomServer
+								.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
+						return;
+					}
+					dealWithRequest(clientNode);
 				}
-				ClientRequestNode clientNode = extractClientInfo(requestType, receivedFromClient);
-				if (clientNode == null) {
-					ChatroomServer
-							.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
-					return;
-				}
-				dealWithRequest(clientNode);
 			} catch (Exception e) {
+				if (disconnected == true) {
+					return;
+				}
 				ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 				e.printStackTrace();
 			}
@@ -297,20 +302,17 @@ public class ClientThread extends Thread {
 
 	public List<String> getFullMessageFromClient() throws Exception {
 		InputStream socketInputStream = this.connectionObject.getSocket().getInputStream();
-		if (socketInputStream != null) {
-			BufferedInputStream inputStream = new BufferedInputStream(socketInputStream);
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			int result = inputStream.read();
-			while ((result != -1) && (inputStream.available() > 0)) {
-				outputStream.write((byte) result);
-				result = inputStream.read();
-			}
-			// Assuming UTF-8 encoding
-			String inFromClient = outputStream.toString("UTF-8");
-			List<String> lines = getRequestStringAsArrayList(inFromClient);
-			return lines;
+		BufferedInputStream inputStream = new BufferedInputStream(socketInputStream);
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		int result = inputStream.read();
+		while ((result != -1) && (inputStream.available() > 0)) {
+			outputStream.write((byte) result);
+			result = inputStream.read();
 		}
-		throw new Exception("InputStream is null");
+		// Assuming UTF-8 encoding
+		String inFromClient = outputStream.toString("UTF-8");
+		List<String> lines = getRequestStringAsArrayList(inFromClient);
+		return lines;
 	}
 
 	private List<String> getRequestStringAsArrayList(String inFromClient) {
