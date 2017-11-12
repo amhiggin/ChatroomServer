@@ -25,7 +25,7 @@ public class Chatroom implements Comparable<Chatroom> {
 				String.format("Removing node %s from chatroom %s", node.getName(), this.chatroomRef));
 		for (Entry<Socket, PrintWriter> record : listOfConnectedClients.entrySet()) {
 			if (record.getKey().equals(clientSocket)) {
-				this.listOfConnectedClients.remove(record);
+				this.listOfConnectedClients.remove(record.getKey(), record.getValue());
 				printChatroomMessageToConsole(
 						String.format("Removed node %s from chatroom %s", node.getName(), this.chatroomRef));
 				return;
