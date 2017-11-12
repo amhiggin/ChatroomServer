@@ -95,7 +95,7 @@ public class ClientThread extends Thread {
 			chat(clientNode);
 			break;
 		case DISCONNECT:
-			disconnectFromServer(clientNode);
+			// Dealt with by the recordClientChangeWithServer method
 			break;
 		case KILL_SERVICE:
 			killService(clientNode);
@@ -275,12 +275,6 @@ public class ClientThread extends Thread {
 				clientNode.getChatroomRequested()));
 
 		handleRequestProcessingError(Error.Chat, clientNode);
-	}
-
-	private void disconnectFromServer(ClientRequestNode clientNode) throws Exception {
-		printThreadMessageToConsole(String.format("Client %s disconnecting from server ", clientNode.getName()));
-		ChatroomServer.recordClientChangeWithServer(this.connectionObject, clientNode);
-		this.join(); // wait for thread to die
 	}
 
 	private synchronized void writeResponseToClient(String response) {
