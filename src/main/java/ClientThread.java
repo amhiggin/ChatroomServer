@@ -34,10 +34,9 @@ public class ClientThread extends Thread {
 	private static final String CLIENT_NAME_IDENTIFIER = "CLIENT_NAME: ";
 	public static final String STUDENT_ID = "13327954";
 
-	ClientConnectionObject connectionObject;
-	List<Chatroom> joinedChatrooms = null;
+	private volatile ClientConnectionObject connectionObject;
 	private int joinId;
-	boolean disconnected;
+	private volatile boolean disconnected;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
@@ -56,20 +55,22 @@ public class ClientThread extends Thread {
 	public void run() {
 		while (disconnected == false) {
 			try {
-				List<String> receivedFromClient = getFullMessageFromClient(this.connectionObject.getSocket());
-				ClientRequest requestType = requestedAction(receivedFromClient);
-				if (requestType == null) {
-					ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
-					return;
+				if (!this.connectionObject.getSocket().isClosed()) {
+					List<String> receivedFromClient = getFullMessageFromClient(this.connectionObject.getSocket());
+					ClientRequest requestType = requestedAction(receivedFromClient);
+					if (requestType == null) {
+						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
+						return;
+					}
+					ClientRequestNode clientNode = extractClientInfo(this.connectionObject.getSocket(), requestType,
+							receivedFromClient);
+					if (clientNode == null) {
+						ChatroomServer
+								.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
+						return;
+					}
+					dealWithRequestAsAppropriate(receivedFromClient, clientNode, requestType);
 				}
-				ClientRequestNode clientNode = extractClientInfo(this.connectionObject.getSocket(), requestType,
-						receivedFromClient);
-				if (clientNode == null) {
-					ChatroomServer
-							.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
-					return;
-				}
-				dealWithRequestAsAppropriate(receivedFromClient, clientNode, requestType);
 			} catch (Exception e) {
 				ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 				e.printStackTrace();
@@ -109,7 +110,7 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private void disconnect(ClientRequestNode clientNode) throws Exception {
+	private synchronized void disconnect(ClientRequestNode clientNode) throws Exception {
 		this.connectionObject.getSocketInputStream().close();
 		this.connectionObject.getSocketOutputStream().close();
 		this.connectionObject.getSocket().close();
@@ -299,7 +300,7 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	public List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
+	public synchronized List<String> getFullMessageFromClient(Socket clientSocket) throws IOException {
 		BufferedInputStream inputStream = new BufferedInputStream(clientSocket.getInputStream());
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		int result = inputStream.read();
