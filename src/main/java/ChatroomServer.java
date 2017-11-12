@@ -100,16 +100,17 @@ public class ChatroomServer {
 	static synchronized void recordClientChangeWithServer(ClientConnectionObject clientConnectionObject,
 			ClientRequestNode clientNode) throws Exception {
 		if (clientNode != null) {
-			printServerMessageToConsole("In recordClientChangeWithServer method - client node isn't null");
+			printServerMessageToConsole(String.format("In recordClientChangeWithServer method - request type is %s",
+					clientNode.getRequestType().getValue()));
 
 			if (clientNode.getRequestType().equals(ClientRequest.JOIN_CHATROOM)
-					&& !getAllConnectedClients().contains(clientConnectionObject.getSocket())
+					&& !getAllConnectedClients().contains(clientConnectionObject)
 					&& (retrieveRequestedChatroomByRoomIdIfExists(clientNode.getChatroomRequested()) != null)) {
 				addClientRecordToServer(clientConnectionObject);
 				printServerMessageToConsole("Successfully added new client record to server");
 				return;
 			} else if (clientNode.getRequestType().equals(ClientRequest.DISCONNECT)
-					&& getAllConnectedClients().contains(clientConnectionObject.getSocket())) {
+					&& getAllConnectedClients().contains(clientConnectionObject)) {
 				removeClientRecordFromServerUponDisconnect(clientConnectionObject, clientNode);
 				printServerMessageToConsole("Successfully removed client record from server");
 				return;
