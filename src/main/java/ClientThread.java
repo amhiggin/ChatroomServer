@@ -136,8 +136,8 @@ public class ClientThread extends Thread {
 		printThreadMessageToConsole(String.format("Disconnecting thread %s", this.getId()));
 		try {
 			ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
-			// this.connectionObject.getSocketInputStream().close();
-			// this.connectionObject.getSocketOutputStream().close();
+			this.connectionObject.getSocketInputStream().close();
+			this.connectionObject.getSocketOutputStream().close();
 			this.connectionObject.getSocket().close();
 			printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
 		} catch (Exception e) {

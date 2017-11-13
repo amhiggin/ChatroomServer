@@ -85,6 +85,8 @@ public class ChatroomServer {
 		try {
 			printServerMessageToConsole("Server shutting down...");
 			for (ClientConnectionObject clientConnection : getAllConnectedClients()) {
+				clientConnection.getSocketInputStream().close();
+				clientConnection.getSocketOutputStream().close();
 				clientConnection.getSocket().close();
 			}
 			getActiveChatRooms().clear();
