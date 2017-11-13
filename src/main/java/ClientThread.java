@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.joda.time.LocalDateTime;
 
@@ -35,7 +34,7 @@ public class ClientThread extends Thread {
 
 	private volatile ClientConnectionObject connectionObject;
 	private int joinId;
-	private AtomicBoolean disconnected;
+	private volatile boolean disconnected;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
@@ -44,7 +43,7 @@ public class ClientThread extends Thread {
 					new PrintWriter(clientSocket.getOutputStream(), true),
 					new BufferedInputStream(clientSocket.getInputStream()));
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
-			this.disconnected.set(false);
+			this.disconnected = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -53,7 +52,7 @@ public class ClientThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			while (!disconnected.get()) {
+			while (!this.disconnected) {
 				try {
 					ClientRequestNode clientNode = packageClientRequestNode();
 					if (clientNode == null) {
@@ -63,7 +62,7 @@ public class ClientThread extends Thread {
 					}
 					dealWithRequest(clientNode);
 				} catch (Exception e) {
-					if (this.disconnected.get()) {
+					if (this.disconnected == true) {
 						printThreadMessageToConsole(
 								"Caught exception in run method, and disconnected == true: exiting.");
 						return;
@@ -128,7 +127,7 @@ public class ClientThread extends Thread {
 	}
 
 	private synchronized void disconnect(ClientRequestNode clientNode) {
-		this.disconnected.getAndSet(true);
+		this.disconnected = true;
 		printThreadMessageToConsole(String.format("Disconnecting thread %s", this.getId()));
 		try {
 			this.connectionObject.getSocket().close();
