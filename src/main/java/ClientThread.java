@@ -35,7 +35,7 @@ public class ClientThread extends Thread {
 
 	private volatile ClientConnectionObject connectionObject;
 	private int joinId;
-	private AtomicBoolean disconnected;
+	private boolean disconnected;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
@@ -44,7 +44,7 @@ public class ClientThread extends Thread {
 					new PrintWriter(clientSocket.getOutputStream(), true),
 					new BufferedInputStream(clientSocket.getInputStream()));
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
-			this.disconnected.set(false);
+			this.disconnected = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -53,7 +53,7 @@ public class ClientThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			while ((this.disconnected.get() == false) && !this.connectionObject.getSocket().isClosed()) {
+			while ((this.disconnected == false) && !this.connectionObject.getSocket().isClosed()) {
 				if (!this.connectionObject.getSocket().isClosed()) {
 					List<String> receivedFromClient = getFullMessageFromClient();
 					if (receivedFromClient == null) {
@@ -75,7 +75,7 @@ public class ClientThread extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			if (this.disconnected.get() == true) {
+			if (this.disconnected == true) {
 				printThreadMessageToConsole("Caught exception in run method, and disconnected == true: exiting.");
 				return;
 			}
@@ -120,7 +120,7 @@ public class ClientThread extends Thread {
 		this.connectionObject.getSocket().close();
 		printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
 		ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
-		this.disconnected.set(true);
+		this.disconnected == true;
 	}
 
 	private void killService(ClientRequestNode clientNode) {
