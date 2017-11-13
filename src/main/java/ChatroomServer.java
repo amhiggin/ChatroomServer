@@ -78,7 +78,7 @@ public class ChatroomServer {
 
 	private static void runClientThread(Socket clientSocket) {
 		ClientThread thread = new ClientThread(clientSocket);
-		thread.run();
+		thread.start();
 	}
 
 	public static synchronized void shutdown() {
