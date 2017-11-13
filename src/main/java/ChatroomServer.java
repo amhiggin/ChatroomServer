@@ -69,8 +69,8 @@ public class ChatroomServer {
 
 	private static Socket acceptAndMaintainSocketConnection() throws IOException, SocketException {
 		Socket clientSocket = serverSocket.accept();
-		// clientSocket.setKeepAlive(true);
-		clientSocket.setTcpNoDelay(true);
+		clientSocket.setKeepAlive(true);
+		// clientSocket.setTcpNoDelay(true);
 		printServerMessageToConsole(
 				String.format("**********\nConnection received from %s...", clientSocket.getInetAddress().toString()));
 		return clientSocket;
