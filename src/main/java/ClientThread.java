@@ -34,7 +34,7 @@ public class ClientThread extends Thread {
 
 	private volatile ClientConnectionObject connectionObject;
 	private int joinId;
-	private boolean disconnected;
+	private volatile boolean disconnected;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
