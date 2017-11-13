@@ -39,10 +39,10 @@ public class ClientThread extends Thread {
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
 		try {
+			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
 			this.connectionObject = new ClientConnectionObject(clientSocket,
 					new PrintWriter(clientSocket.getOutputStream(), true),
-					new BufferedInputStream(clientSocket.getInputStream()));
-			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
+					new BufferedInputStream(clientSocket.getInputStream()), this.joinId);
 			this.disconnected = false;
 		} catch (IOException e) {
 			e.printStackTrace();

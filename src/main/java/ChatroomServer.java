@@ -117,8 +117,7 @@ public class ChatroomServer {
 			ClientRequestNode clientNode) throws Exception {
 		String clientLeftChatroomMessage;
 		String chatMessage;
-		if (clientNode.getRequestType().equals(ClientRequest.DISCONNECT)
-				&& getAllConnectedClients().contains(clientConnectionObject)) {
+		if (getAllConnectedClients().contains(clientConnectionObject)) {
 
 			for (Chatroom chatroom : getActiveChatRooms()) {
 				if (chatroom.getListOfConnectedClients().contains(clientConnectionObject)) {
