@@ -1,9 +1,8 @@
 package main.java;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -35,14 +34,14 @@ public class ClientThread extends Thread {
 
 	private volatile ClientConnectionObject connectionObject;
 	private int joinId;
-	private volatile boolean disconnected;
+	private boolean disconnected;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
 		try {
 			this.connectionObject = new ClientConnectionObject(clientSocket,
 					new PrintWriter(clientSocket.getOutputStream(), true),
-					new BufferedReader(new InputStreamReader(clientSocket.getInputStream())));
+					new BufferedInputStream(clientSocket.getInputStream()));
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
 			this.disconnected = false;
 		} catch (IOException e) {
@@ -115,10 +114,8 @@ public class ClientThread extends Thread {
 	}
 
 	private synchronized void disconnect(ClientRequestNode clientNode) throws Exception {
-		this.connectionObject.getSocketInputStreamReader().close();
-		this.connectionObject.getSocketOutputStreamWriter().close();
-		this.connectionObject.getSocket().getInputStream().close();
-		this.connectionObject.getSocket().getOutputStream().close();
+		this.connectionObject.getSocketInputStream().close();
+		this.connectionObject.getSocketOutputStream().close();
 		this.connectionObject.getSocket().close();
 		printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
 		ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
@@ -143,7 +140,7 @@ public class ClientThread extends Thread {
 		String errorResponse = String.format(ServerResponse.ERROR.getValue(), errorMessage.getValue(),
 				errorMessage.getDescription());
 		try {
-			this.connectionObject.getSocketOutputStreamWriter().write(errorResponse);
+			this.connectionObject.getSocketOutputStream().write(errorResponse);
 		} catch (Exception e) {
 			String temporaryErrorMessageHolder = errorResponse;
 			errorResponse = "Failed to communicate failure response to client: " + temporaryErrorMessageHolder
@@ -296,8 +293,8 @@ public class ClientThread extends Thread {
 	private synchronized void writeResponseToClient(String response) {
 		printThreadMessageToConsole(String.format("Writing response to client: %s", response));
 		try {
-			this.connectionObject.getSocketOutputStreamWriter().write(response);
-			this.connectionObject.getSocketOutputStreamWriter().flush();
+			this.connectionObject.getSocketOutputStream().write(response);
+			this.connectionObject.getSocketOutputStream().flush();
 			printThreadMessageToConsole("Response sent to client successfully");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -308,10 +305,10 @@ public class ClientThread extends Thread {
 	public List<String> getFullMessageFromClient() {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		try {
-			int result = this.connectionObject.getSocketInputStreamReader().read();
-			while ((result != -1)) {
+			int result = this.connectionObject.getSocketInputStream().read();
+			while ((result != -1) && (this.connectionObject.getSocketInputStream().available() > 0)) {
 				outputStream.write((byte) result);
-				result = this.connectionObject.getSocketInputStreamReader().read();
+				result = this.connectionObject.getSocketInputStream().read();
 			}
 			// Assuming UTF-8 encoding
 			String inFromClient = outputStream.toString("UTF-8");
