@@ -44,7 +44,7 @@ public class ClientThread extends Thread {
 					new PrintWriter(clientSocket.getOutputStream(), true),
 					new BufferedInputStream(clientSocket.getInputStream()));
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
-			this.disconnected.set(Boolean.FALSE);
+			this.disconnected.set(false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -53,7 +53,7 @@ public class ClientThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			while ((this.disconnected.equals(Boolean.FALSE)) && !this.connectionObject.getSocket().isClosed()) {
+			while ((this.disconnected.get() == false) && !this.connectionObject.getSocket().isClosed()) {
 				if (!this.connectionObject.getSocket().isClosed()) {
 					List<String> receivedFromClient = getFullMessageFromClient();
 					if (receivedFromClient == null) {
@@ -75,7 +75,7 @@ public class ClientThread extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			if (this.disconnected.equals(Boolean.TRUE)) {
+			if (this.disconnected.get() == true) {
 				printThreadMessageToConsole("Caught exception in run method, and disconnected == true: exiting.");
 				return;
 			}
@@ -120,7 +120,7 @@ public class ClientThread extends Thread {
 		this.connectionObject.getSocket().close();
 		printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
 		ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
-		this.disconnected.set(Boolean.TRUE);
+		this.disconnected.set(true);
 	}
 
 	private void killService(ClientRequestNode clientNode) {
