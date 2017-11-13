@@ -81,12 +81,12 @@ public class ClientThread extends Thread {
 		try {
 			List<String> receivedFromClient = getFullMessageFromClient();
 			if (receivedFromClient == null) {
-				ChatroomServer.outputServiceErrorMessageToConsole("Couldn't read the message sent by client");
+				printThreadMessageToConsole(String.format("Couldn't read the message sent by client %s", this.joinId));
 				return null;
 			}
 			ClientRequest requestType = requestedAction(receivedFromClient);
 			if (requestType == null) {
-				ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request type: invalid");
+				printThreadMessageToConsole("Could not parse request type: invalid");
 				return null;
 			}
 			return extractClientInfo(requestType, receivedFromClient);
