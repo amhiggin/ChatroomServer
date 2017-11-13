@@ -145,7 +145,7 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private void killService(ClientRequestNode clientNode) {
+	private synchronized void killService(ClientRequestNode clientNode) {
 		ChatroomServer.printServerMessageToConsole(
 				String.format("Client %s requested to kill service", clientNode.getName()));
 		ChatroomServer.setRunning(false);
