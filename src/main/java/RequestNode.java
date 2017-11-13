@@ -6,14 +6,14 @@ import java.util.List;
  * An object for storing the temporary info about a client request.
  */
 
-public class ClientRequestNode {
+public class RequestNode {
 
 	private String clientName;
 	private String chatroomId;
 	private List<String> receivedFromClient;
 	private ClientRequest requestType;
 
-	public ClientRequestNode(String clientName, String chatroomId, List<String> receivedFromClient,
+	public RequestNode(String clientName, String chatroomId, List<String> receivedFromClient,
 			ClientRequest requestType) {
 		this.clientName = clientName;
 		this.setChatroomId(chatroomId);

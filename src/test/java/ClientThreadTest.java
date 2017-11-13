@@ -6,7 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import main.java.ChatroomServer;
-import main.java.ClientRequestNode;
+import main.java.RequestNode;
 
 public class ClientThreadTest {
 
@@ -25,7 +25,7 @@ public class ClientThreadTest {
 	@Test
 	public void testNullClientNodeHandledCorrectly() {
 		try {
-			ClientRequestNode node = null;
+			RequestNode node = null;
 			// ClientThread thread = new ClientThread(node, ClientRequest.CHAT,
 			// TestConstants.mockClientChatRequest);
 			// thread.run();
@@ -49,7 +49,7 @@ public class ClientThreadTest {
 
 	@Test
 	public void testEmptyClientNodeHandledCorrectly() {
-		ClientRequestNode node = new ClientRequestNode(null, null, null, null);
+		RequestNode node = new RequestNode(null, null, null, null);
 		// ClientThread thread = new ClientThread(node,
 		// ClientRequest.KILL_SERVICE,
 		// TestConstants.mockClientKillServiceRequest);

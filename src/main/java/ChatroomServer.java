@@ -69,7 +69,7 @@ public class ChatroomServer {
 
 	private static Socket acceptAndMaintainSocketConnection() throws IOException, SocketException {
 		Socket clientSocket = serverSocket.accept();
-		clientSocket.setKeepAlive(true);
+		// clientSocket.setKeepAlive(true);
 		clientSocket.setTcpNoDelay(true);
 		printServerMessageToConsole(
 				String.format("**********\nConnection received from %s...", clientSocket.getInetAddress().toString()));
@@ -99,7 +99,7 @@ public class ChatroomServer {
 		}
 	}
 
-	static void addClientRecordToServer(ClientConnectionObject clientConnectionObject, ClientRequestNode clientNode) {
+	static void addClientRecordToServer(ClientConnectionObject clientConnectionObject, RequestNode clientNode) {
 		// JOIN
 		if (clientNode.getRequestType().equals(ClientRequest.JOIN_CHATROOM)
 				&& !getAllConnectedClients().contains(clientConnectionObject)
@@ -116,7 +116,7 @@ public class ChatroomServer {
 	}
 
 	static synchronized void removeClientRecordFromServerUponDisconnect(ClientConnectionObject clientConnectionObject,
-			ClientRequestNode clientNode) throws Exception {
+			RequestNode clientNode) throws Exception {
 		String clientLeftChatroomMessage;
 		String chatMessage;
 		if (getAllConnectedClients().contains(clientConnectionObject)) {
@@ -179,7 +179,7 @@ public class ChatroomServer {
 		running = value;
 	}
 
-	public static void outputRequestErrorMessageToConsole(String errorResponse, ClientRequestNode clientNode) {
+	public static void outputRequestErrorMessageToConsole(String errorResponse, RequestNode clientNode) {
 		String output = String.format("%s>> SERVER: Error processing request (client %s): %s", getCurrentDateTime(),
 				clientNode.getName(), errorResponse);
 		System.out.println(output);
