@@ -50,8 +50,8 @@ public class Chatroom implements Comparable<Chatroom> {
 			if (record.getSocket() != null) {
 				try {
 					printChatroomMessageToConsole("Sending...");
-					record.getSocketOutputStreamWriter().print(message);
-					record.getSocketOutputStreamWriter().flush();
+					record.getSocketOutputStream().print(message);
+					record.getSocketOutputStream().flush();
 				} catch (Exception e) {
 					printChatroomMessageToConsole("Failed to broadcast to client at socket "
 							+ record.getSocket().getInetAddress().toString());

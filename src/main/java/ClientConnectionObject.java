@@ -1,29 +1,30 @@
 package main.java;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ClientConnectionObject {
 	private volatile Socket socket;
 	private volatile PrintWriter socketOutputStream;
-	private volatile BufferedReader socketInputStream;
+	private volatile BufferedInputStream socketInputStream;
 
-	public ClientConnectionObject(Socket socket, PrintWriter socketOutputStream, BufferedReader bufferedInputStream) {
+	public ClientConnectionObject(Socket socket, PrintWriter socketOutputStream,
+			BufferedInputStream bufferedInputStream) {
 		this.setSocket(socket);
 		this.setSocketOutputStream(socketOutputStream);
 		this.setSocketInputStream(bufferedInputStream);
 	}
 
-	private void setSocketInputStream(BufferedReader socketInputStream) {
+	private void setSocketInputStream(BufferedInputStream socketInputStream) {
 		this.socketInputStream = socketInputStream;
 	}
 
-	public BufferedReader getSocketInputStreamReader() {
+	public BufferedInputStream getSocketInputStream() {
 		return this.socketInputStream;
 	}
 
-	public PrintWriter getSocketOutputStreamWriter() {
+	public PrintWriter getSocketOutputStream() {
 		return socketOutputStream;
 	}
 
