@@ -136,10 +136,11 @@ public class ClientThread extends Thread {
 		printThreadMessageToConsole(String.format("Disconnecting thread %s", this.getId()));
 		try {
 			ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
-			this.connectionObject.getSocket().close();
-			this.connectionObject.getSocketInputStream().close();
-			this.connectionObject.getSocketOutputStream().close();
-			printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
+			// this.connectionObject.getSocket().close();
+			// this.connectionObject.getSocketInputStream().close();
+			// this.connectionObject.getSocketOutputStream().close();
+			// printThreadMessageToConsole(String.format("Client %s port
+			// closed", clientNode.getName()));
 		} catch (Exception e) {
 			printThreadMessageToConsole("Exception occurred when trying to close the socket: " + e.getMessage());
 		}
@@ -366,8 +367,7 @@ public class ClientThread extends Thread {
 			return new RequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1],
 					message.get(0).split(LEAVE_CHATROOM_IDENTIFIER, 0)[1], message, requestType);
 		case DISCONNECT:
-			return new RequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null, message,
-					requestType);
+			return new RequestNode(message.get(2).split(CLIENT_NAME_IDENTIFIER, 0)[1], null, message, requestType);
 		case HELO:
 			printThreadMessageToConsole("Helo client node created");
 			return new RequestNode(null, null, message, requestType);
