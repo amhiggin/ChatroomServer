@@ -338,9 +338,9 @@ public class ClientThread extends Thread {
 			List<String> lines = getRequestStringAsArrayList(inFromClient);
 			return lines;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
-
 	}
 
 	private List<String> getRequestStringAsArrayList(String inFromClient) {
