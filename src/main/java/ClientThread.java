@@ -44,7 +44,7 @@ public class ClientThread extends Thread {
 					new PrintWriter(clientSocket.getOutputStream(), true),
 					new BufferedInputStream(clientSocket.getInputStream()));
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
-			this.disconnected.set(false);
+			this.disconnected.set(Boolean.FALSE);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -120,7 +120,7 @@ public class ClientThread extends Thread {
 		this.connectionObject.getSocket().close();
 		printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
 		ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
-		this.disconnected.set(true);
+		this.disconnected.set(Boolean.TRUE);
 	}
 
 	private void killService(ClientRequestNode clientNode) {
