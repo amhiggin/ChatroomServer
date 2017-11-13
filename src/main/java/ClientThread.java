@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,32 +51,31 @@ public class ClientThread extends Thread {
 
 	@Override
 	public void run() {
-		while ((disconnected == false) && !this.connectionObject.getSocket().isClosed()) {
-			try {
+		try {
+			while ((disconnected == false) && !this.connectionObject.getSocket().isClosed()) {
 				if (!this.connectionObject.getSocket().isClosed()) {
 					List<String> receivedFromClient = getFullMessageFromClient();
 					ClientRequest requestType = requestedAction(receivedFromClient);
 					if (requestType == null) {
 						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
-						return;
+						break;
 					}
 					ClientRequestNode clientNode = extractClientInfo(requestType, receivedFromClient);
 					if (clientNode == null) {
 						ChatroomServer
 								.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
-						return;
+						break;
 					}
 					dealWithRequest(clientNode);
 				}
-			} catch (Exception e) {
-				if ((disconnected == true) || (this.connectionObject.getSocket().isClosed() == true)
-						|| (e instanceof SocketException)) {
-					printThreadMessageToConsole("Caught socket exception due to disconnection");
-					return;
-				}
-				ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
-				e.printStackTrace();
 			}
+		} catch (Exception e) {
+			if (disconnected == true) {
+				printThreadMessageToConsole("Caught exception in run method, and disconnected == true: exiting.");
+				return;
+			}
+			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
+			e.printStackTrace();
 		}
 	}
 
@@ -138,8 +136,8 @@ public class ClientThread extends Thread {
 		String errorResponse = String.format(ServerResponse.ERROR.getValue(), errorMessage.getValue(),
 				errorMessage.getDescription());
 		try {
-			this.connectionObject.getSocket().getOutputStream().write(errorResponse.getBytes());
-		} catch (IOException e) {
+			this.connectionObject.getSocketOutputStream().write(errorResponse);
+		} catch (Exception e) {
 			String temporaryErrorMessageHolder = errorResponse;
 			errorResponse = "Failed to communicate failure response to client: " + temporaryErrorMessageHolder
 					+ ". Exception thrown: " + e.getMessage();
@@ -381,7 +379,7 @@ public class ClientThread extends Thread {
 	}
 
 	private void printThreadMessageToConsole(String message) {
-		System.out.println(String.format("%s>> THREAD: %s", getCurrentDateTime(), message));
+		System.out.println(String.format("%s>> THREAD%s: %s", getCurrentDateTime(), this.getId(), message));
 
 	}
 
