@@ -53,11 +53,11 @@ public class ClientThread extends Thread {
 	public void run() {
 		try {
 			while ((this.disconnected == false) && !this.connectionObject.getSocket().isClosed()) {
-				if (!this.connectionObject.getSocket().isClosed()) {
+				try {
 					List<String> receivedFromClient = getFullMessageFromClient();
 					if (receivedFromClient == null) {
 						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
-						break;
+						throw new Exception("");
 					}
 					ClientRequest requestType = requestedAction(receivedFromClient);
 					if (requestType == null) {
@@ -71,15 +71,19 @@ public class ClientThread extends Thread {
 						break;
 					}
 					dealWithRequest(clientNode);
+				} catch (Exception e) {
+					if (this.disconnected == true) {
+						printThreadMessageToConsole(
+								"Caught exception in run method, and disconnected == true: exiting.");
+						return;
+					}
 				}
 			}
 		} catch (Exception e) {
-			if (this.disconnected == true) {
-				printThreadMessageToConsole("Caught exception in run method, and disconnected == true: exiting.");
-				return;
-			}
 			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
 			e.printStackTrace();
+		} finally {
+			printThreadMessageToConsole(String.format("Exiting thread %s", this.getId()));
 		}
 	}
 
@@ -113,13 +117,18 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private synchronized void disconnect(ClientRequestNode clientNode) throws Exception {
-		this.connectionObject.getSocketInputStream().close();
-		this.connectionObject.getSocketOutputStream().close();
-		this.connectionObject.getSocket().close();
-		printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
-		ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
+	private synchronized void disconnect(ClientRequestNode clientNode) {
 		this.disconnected = true;
+		printThreadMessageToConsole(String.format("Disconnecting thread %s", this.getId()));
+		try {
+			this.connectionObject.getSocket().close();
+			this.connectionObject.getSocketInputStream().close();
+			this.connectionObject.getSocketOutputStream().close();
+			printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
+			ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
+		} catch (Exception e) {
+			printThreadMessageToConsole("Exception occurred when trying to close the socket: " + e.getMessage());
+		}
 	}
 
 	private void killService(ClientRequestNode clientNode) {
