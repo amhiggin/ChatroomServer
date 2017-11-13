@@ -70,7 +70,7 @@ public class ClientThread extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			ChatroomServer.outputServiceErrorMessageToConsole(String.format("%s", e));
+			printThreadMessageToConsole(String.format("%s", e));
 			e.printStackTrace();
 		} finally {
 			printThreadMessageToConsole(String.format("Exiting thread %s", this.getId()));
