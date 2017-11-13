@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.joda.time.LocalDateTime;
 
@@ -34,7 +35,7 @@ public class ClientThread extends Thread {
 
 	private volatile ClientConnectionObject connectionObject;
 	private int joinId;
-	private volatile boolean disconnected;
+	private AtomicBoolean disconnected;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
@@ -43,7 +44,7 @@ public class ClientThread extends Thread {
 					new PrintWriter(clientSocket.getOutputStream(), true),
 					new BufferedInputStream(clientSocket.getInputStream()));
 			this.joinId = ChatroomServer.nextClientId.getAndIncrement();
-			this.disconnected = false;
+			this.disconnected.set(false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -52,27 +53,17 @@ public class ClientThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			while ((this.disconnected == false) && !this.connectionObject.getSocket().isClosed()) {
+			while (this.disconnected.get() == false) {
 				try {
-					List<String> receivedFromClient = getFullMessageFromClient();
-					if (receivedFromClient == null) {
-						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
-						throw new Exception("");
-					}
-					ClientRequest requestType = requestedAction(receivedFromClient);
-					if (requestType == null) {
-						ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request");
-						break;
-					}
-					ClientRequestNode clientNode = extractClientInfo(requestType, receivedFromClient);
+					ClientRequestNode clientNode = packageClientRequestNode();
 					if (clientNode == null) {
 						ChatroomServer
 								.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
-						break;
+						return;
 					}
 					dealWithRequest(clientNode);
 				} catch (Exception e) {
-					if (this.disconnected == true) {
+					if (this.disconnected.get() == true) {
 						printThreadMessageToConsole(
 								"Caught exception in run method, and disconnected == true: exiting.");
 						return;
@@ -84,6 +75,25 @@ public class ClientThread extends Thread {
 			e.printStackTrace();
 		} finally {
 			printThreadMessageToConsole(String.format("Exiting thread %s", this.getId()));
+		}
+	}
+
+	private ClientRequestNode packageClientRequestNode() {
+		try {
+			List<String> receivedFromClient = getFullMessageFromClient();
+			if (receivedFromClient == null) {
+				ChatroomServer.outputServiceErrorMessageToConsole("Couldn't read the message sent by client");
+				return null;
+			}
+			ClientRequest requestType = requestedAction(receivedFromClient);
+			if (requestType == null) {
+				ChatroomServer.outputServiceErrorMessageToConsole("Could not parse request type: invalid");
+				return null;
+			}
+			return extractClientInfo(requestType, receivedFromClient);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 
@@ -118,7 +128,7 @@ public class ClientThread extends Thread {
 	}
 
 	private synchronized void disconnect(ClientRequestNode clientNode) {
-		this.disconnected = true;
+		this.disconnected.getAndSet(true);
 		printThreadMessageToConsole(String.format("Disconnecting thread %s", this.getId()));
 		try {
 			this.connectionObject.getSocket().close();
