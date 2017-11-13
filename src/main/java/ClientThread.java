@@ -34,7 +34,7 @@ public class ClientThread extends Thread {
 
 	private volatile ClientConnectionObject connectionObject;
 	private int joinId;
-	private volatile boolean disconnected;
+	private boolean disconnected;
 
 	public ClientThread(Socket clientSocket) {
 		printThreadMessageToConsole("Creating new runnable task for client connection...");
@@ -57,7 +57,7 @@ public class ClientThread extends Thread {
 					ClientRequestNode clientNode = packageClientRequestNode();
 					if (clientNode == null) {
 						printThreadMessageToConsole(String.format("Could not process invalid request"));
-						if (this.disconnected) {
+						if (this.disconnected == true) {
 							printThreadMessageToConsole(String
 									.format("Could not process invalid request. Disconnected is true: returning..."));
 							return;
@@ -135,11 +135,11 @@ public class ClientThread extends Thread {
 		this.disconnected = true;
 		printThreadMessageToConsole(String.format("Disconnecting thread %s", this.getId()));
 		try {
-			this.connectionObject.getSocket().close();
+			ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
 			this.connectionObject.getSocketInputStream().close();
 			this.connectionObject.getSocketOutputStream().close();
+			this.connectionObject.getSocket().close();
 			printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
-			ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
 		} catch (Exception e) {
 			printThreadMessageToConsole("Exception occurred when trying to close the socket: " + e.getMessage());
 		}
