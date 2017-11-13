@@ -62,7 +62,7 @@ public class ClientThread extends Thread {
 									.format("Could not process invalid request. Disconnected is true: returning..."));
 							return;
 						} else {
-							break;
+							continue;
 						}
 					}
 					dealWithRequest(clientNode);
