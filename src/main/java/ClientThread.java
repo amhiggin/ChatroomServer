@@ -137,6 +137,9 @@ public class ClientThread extends Thread {
 		try {
 			ChatroomServer.removeClientRecordFromServerUponDisconnect(this.connectionObject, clientNode);
 			this.connectionObject.getSocket().close();
+			this.connectionObject.getSocketInputStream().close();
+			this.connectionObject.getSocketOutputStream().flush();
+			this.connectionObject.getSocketOutputStream().close();
 			printThreadMessageToConsole(String.format("Client %s port closed", clientNode.getName()));
 		} catch (Exception e) {
 			printThreadMessageToConsole("Exception occurred when trying to close the socket: " + e.getMessage());
@@ -148,7 +151,7 @@ public class ClientThread extends Thread {
 				String.format("Client %s requested to kill service", clientNode.getName()));
 		ChatroomServer.setRunning(false);
 		try {
-			wait(10000);
+			join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
