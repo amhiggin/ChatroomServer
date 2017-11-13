@@ -56,9 +56,14 @@ public class ClientThread extends Thread {
 				try {
 					ClientRequestNode clientNode = packageClientRequestNode();
 					if (clientNode == null) {
-						ChatroomServer
-								.outputServiceErrorMessageToConsole(String.format("Could not process invalid request"));
-						return;
+						printThreadMessageToConsole(String.format("Could not process invalid request"));
+						if (this.disconnected) {
+							printThreadMessageToConsole(String
+									.format("Could not process invalid request. Disconnected is true: returning..."));
+							return;
+						} else {
+							break;
+						}
 					}
 					dealWithRequest(clientNode);
 				} catch (Exception e) {

@@ -9,5 +9,5 @@
 
 echo "Starting up chatroom server on port $1"
 
-java -cp lib/joda-time-2.9.9.jar:lib/commons-io-2.6.jar:src main.java.ChatroomServer $1 
-#java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=23456 -cp lib/joda-time-2.9.9.jar:lib/commons-io-2.6.jar:src main.java.ChatroomServer $1 
+#java -cp lib/joda-time-2.9.9.jar:lib/commons-io-2.6.jar:src main.java.ChatroomServer $1 
+java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=23456 -cp lib/joda-time-2.9.9.jar:lib/commons-io-2.6.jar:src main.java.ChatroomServer $1 
