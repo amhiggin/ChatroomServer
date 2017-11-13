@@ -53,7 +53,7 @@ public class ClientThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			while (this.disconnected.get() == false) {
+			while (!disconnected.get()) {
 				try {
 					ClientRequestNode clientNode = packageClientRequestNode();
 					if (clientNode == null) {
@@ -63,7 +63,7 @@ public class ClientThread extends Thread {
 					}
 					dealWithRequest(clientNode);
 				} catch (Exception e) {
-					if (this.disconnected.get() == true) {
+					if (this.disconnected.get()) {
 						printThreadMessageToConsole(
 								"Caught exception in run method, and disconnected == true: exiting.");
 						return;
