@@ -2,6 +2,7 @@
 * Amber Higgins, 13327954
 * MAI Computer Engineering 2017/2018
 * For CS7NS1 Scalable Computing module
+* Last tested: 18 Nov 2017. Score: 81/100 (Exception on response of disconnection).
 
 # Dependencies
 This project requires <b>JRE 1.7.0_151</b> and <b>JUnit v4.12</b>. Additional external dependencies as below.
@@ -29,3 +30,4 @@ This project requires <b>JRE 1.7.0_151</b> and <b>JUnit v4.12</b>. Additional ex
 # Remote Debugging
 * In the <i>start.sh</i> script, comment out the (1) line and uncomment the (2) line to make remote debugging available to an IDE. The default port is set to be <b>23456</b>, and the server will suspend startup until a debugger attaches.
 * <b><u>Important:</u></b> Do not have both (1) and (2) uncommented at the same time.
+
