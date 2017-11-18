@@ -1,6 +1,7 @@
 # ChatroomServer
-## Amber Higgins, MAI Computer Engineering 2017/2018, 13327954
-* For Scalable Computing module
+* Amber Higgins, 13327954
+* MAI Computer Engineering 2017/2018
+* For CS7NS1 Scalable Computing module
 
 # Dependencies
 
@@ -25,3 +26,7 @@
      '<i><b>./start.sh <port_number></i></b>'.
     * You should see a message similar to the following:
   <b><i> 01/11/2017 15:31:52>> Server started on port 1234...</i></b>
+   
+# Remote Debugging
+* In the <i>start.sh</i> script, comment out the (1) line and uncomment the (2) line to make remote debugging available to an IDE. The default port is set to be <b>23456</b>, and the server will suspend startup until a debugger attaches.
+* <b><u>Important:</u></b> Do not have both (1) and (2) uncommented at the same time.
