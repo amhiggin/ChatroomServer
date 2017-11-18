@@ -4,16 +4,15 @@
 * For CS7NS1 Scalable Computing module
 
 # Dependencies
+This project requires <b>JRE 1.7.0_151</b> and <b>JUnit v4.12</b>. Additional external dependencies as below.
 
 ## Runtime Dependencies
 <i><b> Included in the /libs dir</i></b>
-* JRE 1.7.0_151
 * Joda Time 2.9.9
 
 ## Test Dependencies ##
 <i><b> Included in the /testlibs dir</i></b>
 * Mockito v1.9.5
-* JUnit v4.12
 
 # Deployment Instructions
 1. Clone this repository using <i><b> git clone https://www.github.com/amhiggin/ChatroomServer </b></i>.
