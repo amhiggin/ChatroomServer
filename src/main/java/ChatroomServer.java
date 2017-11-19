@@ -124,13 +124,13 @@ public class ChatroomServer {
 
 			for (Chatroom chatroom : getActiveChatRooms()) {
 				if (chatroom.getListOfConnectedClients().contains(clientConnectionObject)) {
-					chatroom.removeClientRecord(clientConnectionObject, clientNode);
 					printServerMessageToConsole(String.format("Removed client %s from chatroom %s",
 							clientNode.getName(), chatroom.getChatroomId()));
 					clientLeftChatroomMessage = String.format("%s has left this chatroom", clientNode.getName());
 					chatMessage = String.format(ServerResponse.CHAT.getValue(), chatroom.getChatroomRef(),
 							clientNode.getName(), clientLeftChatroomMessage);
 					chatroom.broadcastMessageInChatroom(chatMessage);
+					chatroom.removeClientRecord(clientConnectionObject, clientNode);
 					printServerMessageToConsole(
 							String.format("Sent message in chatroom%s: '%s'", chatroom.getChatroomId(), chatMessage));
 				}
