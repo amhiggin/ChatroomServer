@@ -30,8 +30,10 @@ public class ChatroomServer {
 		try {
 			initialiseServer(args[0]);
 			while (true) {
-				if ((running == false) && (numLiveThreads.get() == 0)) {
-					shutdown();
+				if (numLiveThreads.get() == 0) {
+					if (running == false) {
+						shutdown();
+					}
 				}
 				handleIncomingConnection();
 			}
