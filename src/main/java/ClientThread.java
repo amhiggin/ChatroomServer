@@ -84,6 +84,8 @@ public class ClientThread extends Thread {
 			if ((ChatroomServer.numLiveThreads.get() == 0) && (ChatroomServer.getRunning() == false)) {
 				ChatroomServer.shutdown();
 			}
+			printThreadMessageToConsole(
+					String.format("Number of live threads remaining: ", ChatroomServer.numLiveThreads.get()));
 		}
 	}
 
@@ -149,8 +151,7 @@ public class ClientThread extends Thread {
 	}
 
 	private synchronized void killService(RequestNode clientNode) {
-		ChatroomServer.printServerMessageToConsole(
-				String.format("Client %s requested to kill service", clientNode.getName()));
+		printThreadMessageToConsole(String.format("Client %s requested to kill service", clientNode.getName()));
 		ChatroomServer.setRunning(false);
 		try {
 			sleep(10000);
