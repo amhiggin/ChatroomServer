@@ -55,7 +55,7 @@ public class ClientThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			while (!this.disconnected) {
+			while (!this.disconnected && ChatroomServer.getRunning()) {
 				try {
 					RequestNode clientNode = packageClientRequestNode();
 					if (clientNode == null) {
