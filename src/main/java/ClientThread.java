@@ -45,6 +45,8 @@ public class ClientThread extends Thread {
 					new BufferedInputStream(clientSocket.getInputStream()), this.joinId);
 			this.disconnected = false;
 			ChatroomServer.numLiveThreads.getAndIncrement();
+			printThreadMessageToConsole(
+					String.format("Number of live threads so far: %s ", ChatroomServer.numLiveThreads.get()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -85,7 +87,7 @@ public class ClientThread extends Thread {
 				ChatroomServer.shutdown();
 			}
 			printThreadMessageToConsole(
-					String.format("Number of live threads remaining: ", ChatroomServer.numLiveThreads.get()));
+					String.format("Number of live threads remaining: %s", ChatroomServer.numLiveThreads.get()));
 		}
 	}
 
