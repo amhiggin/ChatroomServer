@@ -29,11 +29,9 @@ public class ChatroomServer {
 	public static void main(String[] args) {
 		try {
 			initialiseServer(args[0]);
-			while (true) {
-				if (numLiveThreads.get() == 0) {
-					if (running == false) {
-						shutdown();
-					}
+			while (running == true) {
+				if (((numLiveThreads.get()) == 0) && (running == false)) {
+					shutdown();
 				}
 				handleIncomingConnection();
 			}
@@ -89,10 +87,9 @@ public class ChatroomServer {
 		try {
 			printServerMessageToConsole("Server shutting down...");
 			for (ClientConnectionObject clientConnection : getAllConnectedClients()) {
+				clientConnection.getSocket().close();
 				clientConnection.getSocketInputStream().close();
 				clientConnection.getSocketOutputStream().close();
-				clientConnection.getSocketOutputStream().flush();
-				clientConnection.getSocket().close();
 			}
 			getActiveChatRooms().clear();
 			getAllConnectedClients().clear();
