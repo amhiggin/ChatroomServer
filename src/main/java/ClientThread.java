@@ -128,6 +128,7 @@ public class ClientThread extends Thread {
 			disconnect(clientNode);
 			return;
 		case KILL_SERVICE:
+			printThreadMessageToConsole("at kill server function");
 			killService(clientNode);
 			return;
 		default:
@@ -152,9 +153,9 @@ public class ClientThread extends Thread {
 				String.format("Client %s requested to kill service", clientNode.getName()));
 		ChatroomServer.setRunning(false);
 		try {
-			join();
+			sleep(10000);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			interrupt();
 		}
 		if (!ChatroomServer.getServerSocket().isClosed()) {
 			handleRequestProcessingError(Error.KillService, clientNode);
