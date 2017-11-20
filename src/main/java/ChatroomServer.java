@@ -15,6 +15,7 @@ public class ChatroomServer {
 
 	public static AtomicInteger nextClientId;
 	public static AtomicInteger nextChatroomId;
+	public static AtomicInteger numLiveThreads;
 	private static ServerSocket serverSocket;
 	private static volatile boolean running;
 	private static List<Chatroom> activeChatRooms;
@@ -60,6 +61,7 @@ public class ChatroomServer {
 		running = true;
 		nextClientId = new AtomicInteger(0);
 		nextChatroomId = new AtomicInteger(0);
+		numLiveThreads = new AtomicInteger(0);
 	}
 
 	private static void handleIncomingConnection() throws Exception {
@@ -178,6 +180,10 @@ public class ChatroomServer {
 
 	public static void setRunning(boolean value) {
 		running = value;
+	}
+
+	public static boolean getRunning() {
+		return running;
 	}
 
 	public static void outputRequestErrorMessageToConsole(String errorResponse, RequestNode clientNode) {

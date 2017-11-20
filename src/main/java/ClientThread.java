@@ -44,6 +44,7 @@ public class ClientThread extends Thread {
 					new PrintWriter(clientSocket.getOutputStream(), true),
 					new BufferedInputStream(clientSocket.getInputStream()), this.joinId);
 			this.disconnected = false;
+			ChatroomServer.numLiveThreads.getAndIncrement();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -79,6 +80,10 @@ public class ClientThread extends Thread {
 			e.printStackTrace();
 		} finally {
 			printThreadMessageToConsole(String.format("Exiting thread %s", this.getId()));
+			ChatroomServer.numLiveThreads.getAndDecrement();
+			if ((ChatroomServer.numLiveThreads.get() == 0) && (ChatroomServer.getRunning() == false)) {
+				ChatroomServer.shutdown();
+			}
 		}
 	}
 
