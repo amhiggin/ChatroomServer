@@ -2,7 +2,7 @@
 * Amber Higgins, 13327954
 * MAI Computer Engineering 2017/2018
 * For CS7NS1 Scalable Computing module
-* Last tested: 18 Nov 2017. Score: 81/100 (Exception on response of disconnection).
+* Last tested: 21 Nov 2017. Score: 102/100.
 
 # Dependencies
 This project requires <b>JRE 1.7.0_151</b> and <b>JUnit v4.12</b>. Additional external dependencies as below.
