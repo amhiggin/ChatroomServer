@@ -3,6 +3,7 @@
 * MAI Computer Engineering 2017/2018
 * For CS7NS1 Scalable Computing module
 * Last tested: 21 Nov 2017. Score: 102/100.
+![grade](https://github.com/amhiggin/ChatroomServer/blob/master/grade_chatserver.PNG)
 
 # Dependencies
 This project requires <b>JRE 1.7.0_151</b> and <b>JUnit v4.12</b>. Additional external dependencies as below.
