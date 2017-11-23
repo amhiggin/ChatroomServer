@@ -2,7 +2,7 @@
 * Amber Higgins, 13327954
 * MAI Computer Engineering 2017/2018
 * For CS7NS1 Scalable Computing module
-* Last tested: 21 Nov 2017. Score: 102/100.
+* Last tested: 21 Nov 2017. Score: 102.
 ![grade](https://github.com/amhiggin/ChatroomServer/blob/master/grade_chatserver.PNG)
 
 # Dependencies
