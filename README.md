@@ -32,3 +32,5 @@ This project requires <b>JRE 1.7.0_151</b> and <b>JUnit v4.12</b>. Additional ex
 * In the <i>start.sh</i> script, comment out the (1) line and uncomment the (2) line to make remote debugging available to an IDE. The default port is set to be <b>23456</b>, and the server will suspend startup until a debugger attaches.
 * <b><u>Important:</u></b> Do not have both (1) and (2) uncommented at the same time.
 
+# Extra Notes
+* The architecture has changed substantially since the initial commit: including the addition and then removal of a threadpool execution service.
